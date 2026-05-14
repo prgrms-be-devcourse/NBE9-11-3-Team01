@@ -69,11 +69,12 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
 
+    // Test
+    testCompileOnly("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok")
+
     kapt("org.projectlombok:lombok") // 코틀린이 자바 롬복을 인식하게 만드는 설정
 
-    // Test
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 kotlin {
@@ -81,6 +82,7 @@ kotlin {
         freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
     }
 }
+
 kapt {
     keepJavacAnnotationProcessors = true
 }
