@@ -45,6 +45,11 @@ src/main/generated/
 
 ### PASSWORD KEY ###
 application-secret.yaml
+application-secret.yml
 application-*-secret.yaml
 application-mail.yaml
 
+# --- H2 Database files ---
+*.mv.db
+*.trace.db
+db_dev*
