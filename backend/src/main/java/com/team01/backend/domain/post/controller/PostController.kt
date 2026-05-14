@@ -128,7 +128,7 @@ class PostController(
 
         return ResponseEntity.ok(
                 ApiResponse.ofSuccess(
-                        new PostWriteResponse(post, postsCount)
+                       PostWriteResponse.of(post, postsCount)
                 )
         );
     }*/
