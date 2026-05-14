@@ -11,7 +11,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,19 +37,21 @@ public class PostLikeService {
         User user = findUser(email);
         Post post = findPost(postId); // 검증과 동시에 Post 객체 확보
 
-        int deleted = postLikeRepository.deleteByUserIdAndPostId(user.getId(), postId);
-
         boolean liked;
-        if (deleted > 0) {
-            postRepository.decreaseLikeCount(postId);
-            liked = false;
-        }
-        else {
-            int inserted = postLikeRepository.tryInsert(user.getId(), postId);
-            if (inserted > 0) {
-                postRepository.increaseLikeCount(postId);
-            }
+
+        int inserted = postLikeRepository.tryInsert(user.getId(), postId);
+        if (inserted > 0) {
+            postRepository.increaseLikeCount(postId);
             liked = true;
+        } else {
+            int deleted = postLikeRepository.deleteByUserIdAndPostId(user.getId(), postId);
+            if (deleted > 0) {
+                postRepository.decreaseLikeCount(postId);
+                liked = false;
+            }
+            else{
+                liked = true;
+            }
         }
         evictTop5Cache(post.getBoard().getId());
 
@@ -59,11 +60,13 @@ public class PostLikeService {
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  좋아요 수 조회 — Redis 우선, Cold Start 시 DB fallback
+    // 좋아요 수 조회 - DB
     // ─────────────────────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     public int getLikeCount(Long postId) {
-        return findPost(postId).getLikeCount();
+        findPost(postId); // 존재 검증
+        return postLikeRepository.countByPostId(postId);
     }
 
     // ─────────────────────────────────────────────────────────────

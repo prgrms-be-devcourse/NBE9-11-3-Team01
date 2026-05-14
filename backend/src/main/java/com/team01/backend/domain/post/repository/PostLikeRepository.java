@@ -22,7 +22,7 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     int deleteByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 
     @Modifying
-    @Query(value = "MERGE INTO POST_LIKES (USER_ID, POST_ID) KEY(USER_ID, POST_ID) VALUES (:userId, :postId)", nativeQuery = true)
+    @Query(value = "INSERT INTO POST_LIKES (USER_ID, POST_ID) SELECT :userId, :postId WHERE NOT EXISTS (SELECT 1 FROM POST_LIKES WHERE USER_ID = :userId AND POST_ID = :postId)", nativeQuery = true)
     int tryInsert(@Param("userId") Long userId, @Param("postId") Long postId);
 
     List<PostLike> findByPost_Id(Long postId);
