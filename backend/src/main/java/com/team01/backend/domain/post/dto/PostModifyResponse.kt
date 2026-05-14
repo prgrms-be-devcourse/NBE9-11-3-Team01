@@ -21,6 +21,7 @@ data class PostModifyResponse(
     @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     val modifiedAt: LocalDateTime
 ) {
+    // 팀 컨벤션: 부 생성자에서 필수 값 검증 및 예외 던지기
     constructor(post: Post) : this(
         id = post.id ?: throw IllegalStateException("Post id is null"),
         title = post.title,
