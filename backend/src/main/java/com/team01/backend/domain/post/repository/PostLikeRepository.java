@@ -22,12 +22,8 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     int deleteByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 
     @Modifying
-    @Query("DELETE FROM PostLike pl WHERE pl.post.id = :postId")
-    void deleteByPostId(@Param("postId") Long postId);
-
-    @Modifying
     @Query(value = "MERGE INTO POST_LIKES (USER_ID, POST_ID) KEY(USER_ID, POST_ID) VALUES (:userId, :postId)", nativeQuery = true)
-    void mergeInsert(@Param("userId") Long userId, @Param("postId") Long postId);
+    int tryInsert(@Param("userId") Long userId, @Param("postId") Long postId);
 
     List<PostLike> findByPost_Id(Long postId);
 }
