@@ -2,6 +2,10 @@ plugins {
     java
     id("org.springframework.boot") version "4.0.5"
     id("io.spring.dependency-management") version "1.1.7"
+    kotlin("jvm") version "2.2.21"
+    kotlin("plugin.spring") version "2.2.21"
+    kotlin("plugin.jpa") version "2.2.21"
+//    kotlin("kapt")
 }
 
 group = "com.team01"
@@ -10,7 +14,7 @@ description = "backend"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(24)
     }
 }
 
@@ -56,6 +60,18 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor("org.projectlombok:lombok")
 }
+
+//kotlin {
+//    compilerOptions {
+//        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+//    }
+//}
+//
+//allOpen {
+//    annotation("jakarta.persistence.Entity")
+//    annotation("jakarta.persistence.MappedSuperclass")
+//    annotation("jakarta.persistence.Embeddable")
+//}
 
 tasks.withType<Test> {
     useJUnitPlatform()
