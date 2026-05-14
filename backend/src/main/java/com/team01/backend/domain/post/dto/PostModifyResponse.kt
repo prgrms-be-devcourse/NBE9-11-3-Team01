@@ -23,15 +23,15 @@ data class PostModifyResponse(
 ) {
         // 컨벤션 3번: 정적 팩토리 메서드 of 사용
         companion object {
-            @JvmStatic // 자바 컨트롤러에서 편하게 부르기 위해 추가
+            @JvmStatic
             fun of(post: Post): PostModifyResponse {
                 return PostModifyResponse(
-                    // [수정] .id 대신 .getId() 메서드를 직접 호출합니다.
+                    // [수정] .id 대신 .getId() 메서드를 직접 호출
                     id = post.getId(),
                     title = post.title,
                     content = post.content,
 
-                    // 연관 엔티티들도 게터로 접근하세요.
+                    // 연관 엔티티들도 게터로 접근
                     boardId = post.board?.getId(),
                     boardName = post.board?.name ?: "",
 
@@ -41,7 +41,7 @@ data class PostModifyResponse(
                     authorId = post.author?.getId(),
                     authorNickname = post.author?.nickname ?: "",
 
-                    // BaseEntity 필드들도 게터로 접근합니다.
+                    // BaseEntity 필드들도 게터로 접근
                     createdAt = post.getCreatedAt(),
                     modifiedAt = post.getModifiedAt()
                 )
