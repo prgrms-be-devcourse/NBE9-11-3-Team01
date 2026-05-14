@@ -28,6 +28,10 @@ public class Board extends BaseEntity {
         this.isDeleted = false;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public void update(String name, String description) { // 게시판 수정
         this.name = name;
         this.description = description;

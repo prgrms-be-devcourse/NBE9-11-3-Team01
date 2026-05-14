@@ -29,11 +29,31 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "board_id")
     private Board board;
 
+    public String getTitle() {
+        return title;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
     // DB에는 authorId 컬럼이 자동으로 생성됨
     @ManyToOne(fetch = FetchType.LAZY)
     private User author;
 
     private int likeCount;
+
+    public Board getBoard() {
+        return board;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public User getAuthor() {
+        return author;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
