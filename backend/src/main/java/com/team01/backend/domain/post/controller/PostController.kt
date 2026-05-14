@@ -168,7 +168,7 @@ class PostController(
                 reqBody.categoryId);
 
         return ResponseEntity.ok(
-                ApiResponse.ofSuccess(new PostModifyResponse(post))
+                ApiResponse.ofSuccess(PostModifyResponse.Companion.of(post))
         );
     }*/
 

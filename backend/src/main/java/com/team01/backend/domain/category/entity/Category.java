@@ -15,6 +15,10 @@ public class Category extends BaseEntity {
     private Long boardId;
     private String name;
 
+    public String getName() {
+        return name;
+    }
+
     public Category(Long boardId, String name){
         this.boardId = boardId;
         this.name = name;
