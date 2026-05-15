@@ -21,7 +21,7 @@ data class PostWriteResponse(
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     val modifiedAt: LocalDateTime?,
 
-    val postsCount: Long // 기존 응답에 없던 postsCount를 추가하여 평탄화
+    val postsCount: Long
 ) {
     companion object {
         @JvmStatic
@@ -30,12 +30,18 @@ data class PostWriteResponse(
                 id = post.getId(),
                 title = post.getTitle(),
                 content = post.getContent(),
-                boardId = post.getBoard()?.getId(),
-                boardName = post.getBoard()?.getName() ?: "",
+
+                // [수정] Board가 코틀린으로 전환됨에 따라 프로퍼티 접근
+                boardId = post.getBoard()?.id,
+                boardName = post.getBoard()?.name ?: "",
+
+                // Category나 Author도 팀원이 전환했다면 아래처럼 .id / .name 형태로 바꿔주세요.
                 categoryId = post.getCategory()?.getId(),
                 categoryName = post.getCategory()?.getName() ?: "",
+
                 authorId = post.getAuthor()?.getId(),
                 authorNickname = post.getAuthor()?.getNickname() ?: "",
+
                 createdAt = post.getCreatedAt(),
                 modifiedAt = post.getModifiedAt(),
                 postsCount = postsCount
