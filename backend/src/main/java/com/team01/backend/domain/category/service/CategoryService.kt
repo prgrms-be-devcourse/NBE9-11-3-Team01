@@ -37,7 +37,7 @@ class CategoryService(
         val category = categoryRepository.findByIdOrNull(categoryId)
             ?:throw EntityNotFoundException("존재하지 않는 카테고리입니다")
 
-        if(categoryRepository.existsByBoardIdAndName(category.boardId, name)){ //게시판 별 이름 중복 체크 - 내 이름 제외
+        if(category.name!=name && categoryRepository.existsByBoardIdAndName(category.boardId, name)){ //게시판 별 이름 중복 체크 - 내 이름 제외
             throw  IllegalArgumentException("중복된 이름입니다")
         }
 
