@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 
 
-@Getter
+
 @MappedSuperclass
 public abstract class BaseEntity {
 
@@ -35,5 +35,17 @@ public abstract class BaseEntity {
     @PreUpdate
     void preUpdate() {
         this.modifiedAt = LocalDateTime.now();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getModifiedAt() {
+        return modifiedAt;
     }
 }
