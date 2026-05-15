@@ -1,17 +1,17 @@
-package com.team01.backend.domain.post.controller;
+package com.team01.backend.domain.post.controller
 
-import com.team01.backend.domain.post.dto.*;
+import com.team01.backend.domain.post.dto.*
 import com.team01.backend.domain.post.service.PostService
-import com.team01.backend.global.response.ApiResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.team01.backend.global.response.ApiResponse
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.Size
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.*
 
 
 @Tag(name = "게시글", description = "게시글 관련 API")
@@ -22,11 +22,9 @@ class PostController(
 ) {
 
     // 검증 로직 분리
-    private fun validateLogin(userDetails: UserDetails?) {
-        if (userDetails == null) {
-            throw IllegalArgumentException("로그인이 필요한 서비스입니다.")
-        }
-    }
+    private fun requireLogin(userDetails: UserDetails?): String =
+        userDetails?.username
+            ?: throw IllegalArgumentException("로그인이 필요한 서비스입니다.")
 
     // 게시판별 글 목록 조회
     @Operation(summary = "게시판별 글 목록 조회", description = "키워드 검색, 카테고리 필터, 페이징 지원")
@@ -77,11 +75,8 @@ class PostController(
         @PathVariable postId: Long,
         @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<PostDetailResponseDto>> {
-        validateLogin(userDetails)
-
-        val email: String = userDetails?.username
-            ?: throw IllegalArgumentException("로그인이 필요한 서비스입니다.")
-        val post: PostDetailResponseDto = postService.getPostById(postId, email)
+        val email = requireLogin(userDetails)
+        val post = postService.getPostById(postId, email)
         return ResponseEntity.ok(ApiResponse.ofSuccess(post))
     }
 
