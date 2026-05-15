@@ -75,7 +75,7 @@ public class PostLikeService {
 
     @Transactional(readOnly = true)
     public List<PostLike> getLikes(Long postId) {
-        return postLikeRepository.findByPost_Id(postId);
+        return postLikeRepository.findByPostId(postId);
     }
 
     // ─────────────────────────────────────────────────────────────

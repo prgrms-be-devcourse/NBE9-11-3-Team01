@@ -1,6 +1,7 @@
-package com.team01.backend.domain.post.dto;
+package com.team01.backend.domain.post.dto
 
-public record PostLikeResponseDto(
-        boolean liked,
-        int likeCount
-) {}
+
+data class PostLikeResponseDto(
+    val liked: Boolean,
+    val likeCount: Int
+)
