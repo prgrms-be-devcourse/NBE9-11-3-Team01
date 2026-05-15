@@ -48,3 +48,4 @@ application-secret.yaml
 application-*-secret.yaml
 application-mail.yaml
 
+*.log

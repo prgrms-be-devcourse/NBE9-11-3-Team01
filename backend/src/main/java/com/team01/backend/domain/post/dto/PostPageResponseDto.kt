@@ -1,23 +1,26 @@
-package com.team01.backend.domain.post.dto;
+package com.team01.backend.domain.post.dto
 
-import org.springframework.data.domain.Page;
+import kotlin.jvm.JvmStatic
+import org.springframework.data.domain.Page
 
-import java.util.List;
-
-public record PostPageResponseDto(
-        List<PostResponseDto> posts,
-        int currentPage,
-        int totalPages,
-        long totalElements,
-        boolean hasNext
+data class PostPageResponseDto(
+        val posts: List<PostResponseDto>,
+        val currentPage: Int,
+        val totalPages: Int,
+        val totalElements: Long,
+        val hasNext: Boolean,
 ) {
-    public static PostPageResponseDto from(Page<PostResponseDto> page) {
-        return new PostPageResponseDto(
-                page.getContent(),
-                page.getNumber() + 1,
-                page.getTotalPages(),
-                page.getTotalElements(),
-                page.hasNext()
-        );
+    companion object {
+        @JvmStatic
+        fun of(page: Page<PostResponseDto>): PostPageResponseDto = PostPageResponseDto(
+                posts = page.content,
+                currentPage = page.number + 1,
+                totalPages = page.totalPages,
+                totalElements = page.totalElements,
+                hasNext = page.hasNext(),
+                )
+
+        @JvmStatic
+        fun from(page: Page<PostResponseDto>): PostPageResponseDto = of(page)
     }
 }
