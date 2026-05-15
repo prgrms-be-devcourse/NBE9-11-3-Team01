@@ -35,7 +35,7 @@ data class PostWriteResponse(
                 boardId = post.getBoard()?.id,
                 boardName = post.getBoard()?.name ?: "",
 
-                // Category나 Author도 팀원이 전환했다면 아래처럼 .id / .name 형태로 바꿔주세요.
+                // Category나 Author도 전환되면 프로퍼티로 변경 필요
                 categoryId = post.getCategory()?.getId(),
                 categoryName = post.getCategory()?.getName() ?: "",
 
