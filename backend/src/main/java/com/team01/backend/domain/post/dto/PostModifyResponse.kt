@@ -25,12 +25,16 @@ data class PostModifyResponse(
         id = post.id ?: throw IllegalStateException("Post id is null"),
         title = post.title,
         content = post.content,
+
         boardId = post.board.id ?: throw IllegalStateException("Board id is null"),
         boardName = post.board.name,
+
         categoryId = post.category.id ?: throw IllegalStateException("Category id is null"),
         categoryName = post.category.name,
+
         authorId = post.author.id ?: throw IllegalStateException("User id is null"),
         authorNickname = post.author.nickname,
+
         createdAt = post.createdAt ?: throw IllegalStateException("createdAt is null"),
         modifiedAt = post.modifiedAt ?: throw IllegalStateException("modifiedAt is null")
     )
