@@ -27,6 +27,14 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    public String getNickname() {
+        return nickname;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
     @Column(nullable = false)
     private String password;
 
