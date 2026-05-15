@@ -1,39 +1,43 @@
-package com.team01.backend.domain.post.dto;
+package com.team01.backend.domain.post.dto
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.team01.backend.domain.post.entity.Post;
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.team01.backend.domain.post.entity.Post
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
 
-public record PostModifyResponse (
-        Long id,
-        String title,
-        String content,
-        Long boardId,
-        String boardName,
-        Long categoryId,
-        String categoryName,
-        Long authorId,
-        String authorNickname,
+data class PostModifyResponse(
+    val id: Long,
+    val title: String,
+    val content: String,
+    val boardId: Long,
+    val boardName: String,
+    val categoryId: Long,
+    val categoryName: String,
+    val authorId: Long,
+    val authorNickname: String,
 
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime createdAt,
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime modifiedAt
-){
-    public PostModifyResponse(Post post) {
-        this(
-                post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getBoard().getId(),
-                post.getBoard().getName(),
-                post.getCategory().getId(),
-                post.getCategory().getName(),
-                post.getAuthor().getId(),
-                post.getAuthor().getNickname(),
-                post.getCreatedAt(),
-                post.getModifiedAt()
-        );
+    @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    val createdAt: LocalDateTime,
+    @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    val modifiedAt: LocalDateTime
+) {
+    constructor(post: Post) : this(
+        id = post.id ?: throw IllegalStateException("Post id is null"),
+        title = post.title,
+        content = post.content,
+        boardId = post.board?.id ?: throw IllegalStateException("Board id is null"),
+        boardName = post.board?.name ?: "",
+        categoryId = post.category?.id ?: throw IllegalStateException("Category id is null"),
+        categoryName = post.category?.name ?: "",
+        authorId = post.author?.id ?: throw IllegalStateException("Member id is null"),
+        authorNickname = post.author?.nickname ?: "",
+        createdAt = post.createdAt ?: throw IllegalStateException("createdAt is null"),
+        modifiedAt = post.modifiedAt ?: throw IllegalStateException("modifiedAt is null")
+    )
+
+    companion object {
+        // 컨벤션: 정적 팩토리 메서드 of 사용
+        @JvmStatic
+        fun of(post: Post): PostModifyResponse = PostModifyResponse(post)
     }
 }
