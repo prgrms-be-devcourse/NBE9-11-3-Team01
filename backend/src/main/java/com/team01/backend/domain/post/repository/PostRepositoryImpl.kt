@@ -2,65 +2,88 @@ package com.team01.backend.domain.post.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.PathBuilder
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.team01.backend.domain.board.entity.Board;
+import com.team01.backend.domain.category.entity.Category
 import com.team01.backend.domain.post.entity.Post;
-import com.team01.backend.domain.post.entity.QPost;
-import lombok.RequiredArgsConstructor;
+import com.team01.backend.domain.user.entity.User
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import kotlin.jvm.java
 
 // PostRepositoryCustom 구현체 - QueryDSL로 동적 검색 쿼리 처리
-
 @Repository
-@RequiredArgsConstructor
-public class PostRepositoryImpl implements PostRepositoryCustom {
-    private final JPAQueryFactory queryFactory;
-    private final QPost post = QPost.post;
+class PostRepositoryImpl(
+        private val queryFactory: JPAQueryFactory,
+        ) : PostRepositoryCustom {
+    private val post = PathBuilder(Post::class.java, "post")
+    private val author = PathBuilder(User::class.java, "author")
+    private val category = PathBuilder(Category::class.java, "category")
 
-    @Override
-    public Page<Post> searchByBoardId(Long boardId, String keyword, Long categoryId, Pageable pageable, String sort) {
-        List<Post> posts = queryFactory
-                .selectFrom(post)
-                .join(post.author).fetchJoin()
-                .join(post.category).fetchJoin()
-                .where(
-                        post.board.id.eq(boardId),
-                        post.isDeleted.eq(false),
-                        containsKeyword(keyword),
-                        eqCategoryId(categoryId)
-                )
-                .orderBy("likes".equals(sort) ? post.likeCount.desc() : post.createdAt.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+    override fun searchByBoardId(
+            boardId: Long,
+            keyword: String?,
+            categoryId: Long?,
+            pageable: Pageable,
+            sort: String,
+    ): Page<Post> {
+        val posts = queryFactory
+            .selectFrom(post)
+            .join(post.get("author", User::class.java), author).fetchJoin()
+            .join(post.get("category", Category::class.java), category).fetchJoin()
+            .where(
+                boardIdEq(boardId),
+                post.getBoolean("isDeleted").eq(false),
+                containsKeyword(keyword),
+                eqCategoryId(categoryId),
+            )
+            .orderBy(
+                if (sort == "likes") {
+                    post.getNumber("likeCount", java.lang.Integer::class.java).desc()
+                } else {
+                    post.getDateTime("createdAt", LocalDateTime::class.java).desc()
+                },
+            )
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
+            .fetch()
+            .toList()
 
-        Long total = queryFactory
+        val total: Long = queryFactory
                 .select(post.count())
                 .from(post)
                 .where(
-                        post.board.id.eq(boardId),
-                        post.isDeleted.eq(false),
+                        boardIdEq(boardId),
+                        post.getBoolean("isDeleted").eq(false),
                         containsKeyword(keyword),
-                        eqCategoryId(categoryId)
-                )
-                .fetchOne();
+                        eqCategoryId(categoryId),
+                        )
+                .fetchOne() ?: 0L
 
-        return new PageImpl<>(posts, pageable, total != null ? total : 0);
+        return PageImpl(posts, pageable, total)
     }
 
-    private BooleanExpression eqCategoryId(Long categoryId) {
-        if (categoryId == null) return null;
-        return post.category.id.eq(categoryId);
-    }
+    private fun boardIdEq(boardId: Long): BooleanExpression =
+        post.get("board", Board::class.java)
+            .getNumber("id", java.lang.Long::class.java)
+            .eq(boardId as java.lang.Long)
+
+    private fun eqCategoryId(categoryId: Long?): BooleanExpression? =
+        categoryId?.let {
+            post.get("category", Category::class.java)
+                .getNumber("id", java.lang.Long::class.java)
+                .eq(it as java.lang.Long)
+        }
 
     // sanitize 로직 제거, Filter에서 이미 처리됨
-    private BooleanExpression containsKeyword(String keyword) {
-        if (keyword == null) return null;
-        if (keyword.isBlank()) return Expressions.FALSE;
-        return post.title.containsIgnoreCase(keyword.trim());
+    private fun containsKeyword(keyword: String?): BooleanExpression? {
+    if (keyword == null) return null
+    if (keyword.isBlank()) return Expressions.FALSE
+    return post.getString("title").containsIgnoreCase(keyword.trim())
     }
 }
