@@ -7,9 +7,12 @@ data class CategoryResponseDto(
     val boardId: Long,
     val name: String
 ) {
-    constructor(category: Category) : this(
-        category.id,
-        category.boardId,
-        category.name
-    )
+    companion object {
+        fun from(category: Category): CategoryResponseDto =
+            CategoryResponseDto(
+                id = category.id,
+                boardId = category.boardId,
+                name = category.name,
+            )
+    }
 }

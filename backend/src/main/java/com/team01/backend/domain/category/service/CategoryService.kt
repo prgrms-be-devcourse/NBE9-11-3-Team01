@@ -26,7 +26,7 @@ class CategoryService(
         }
         val category = Category(boardId, name)
         categoryRepository.save(category)
-        return CategoryCreateResponseDto(category)
+        return CategoryCreateResponseDto.from(category)
     }
 
     fun count() =
@@ -43,17 +43,17 @@ class CategoryService(
 
         category.update(name)
 //        categoryRepository.save(category)
-        return  CategoryCreateResponseDto(category)
+        return  CategoryCreateResponseDto.from(category)
     }
 
     fun list(): List<CategoryResponseDto>{
         return categoryRepository.findAll()
-            .map(::CategoryResponseDto)
+            .map(CategoryResponseDto::from)
     }
 
     // 게시판별 카테고리 목록 조회 (글쓰기 페이지 카테고리 드롭다운용)
     fun listByBoardId(boardId: Long): List<CategoryResponseDto>{
         return categoryRepository.findByBoardId(boardId)
-            .map(::CategoryResponseDto)
+            .map(CategoryResponseDto::from)
     }
 }

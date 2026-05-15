@@ -13,11 +13,14 @@ data class CategoryCreateResponseDto(
     @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     val modifiedAt: LocalDateTime
 ) {
-    constructor(category: Category) : this(
-        category.id,
-        category.boardId,
-        category.name,
-        category.createdAt,
-        category.modifiedAt
-    )
+    companion object {
+        fun from(category: Category): CategoryCreateResponseDto =
+            CategoryCreateResponseDto(
+                id = category.id,
+                boardId = category.boardId,
+                name = category.name,
+                createdAt = category.createdAt,
+                modifiedAt = category.modifiedAt
+            )
+    }
 }
