@@ -19,7 +19,10 @@ interface PostLikeRepository : JpaRepository<PostLike, Long> {
 
     @Modifying
     @Query(
-        value = "INSERT INTO POST_LIKES (USER_ID, POST_ID) SELECT :userId, :postId WHERE NOT EXISTS (SELECT 1 FROM POST_LIKES WHERE USER_ID = :userId AND POST_ID = :postId)",
+        value = "INSERT INTO POST_LIKES (USER_ID, POST_ID, CREATEDAT, MODIFIEDAT) " +
+                "SELECT :userId, :postId, NOW(), NOW() " +
+                "WHERE NOT EXISTS " +
+                "(SELECT 1 FROM POST_LIKES WHERE USER_ID = :userId AND POST_ID = :postId)",
         nativeQuery = true
     )
     fun tryInsert(@Param("userId") userId: Long, @Param("postId") postId: Long): Int

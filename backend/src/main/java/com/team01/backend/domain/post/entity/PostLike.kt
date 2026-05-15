@@ -14,7 +14,10 @@ import jakarta.persistence.*
 @Entity
 @Table(
     name = "post_likes",
-    uniqueConstraints = [UniqueConstraint(name = "uk_post_likes_user_post", columnNames = ["user_id", "post_id"])]
+    uniqueConstraints = [UniqueConstraint(
+        name = "uk_post_likes_user_post",
+        columnNames = ["user_id", "post_id"]
+    )]
 )
 class PostLike(
     @field:ManyToOne(fetch = FetchType.LAZY)
