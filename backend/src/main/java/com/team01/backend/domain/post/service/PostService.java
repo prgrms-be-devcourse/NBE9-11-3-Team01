@@ -12,7 +12,6 @@ import com.team01.backend.domain.comment.service.CommentService;
 import com.team01.backend.domain.post.dto.PostDetailResponseDto;
 import com.team01.backend.domain.post.dto.PostPageResponseDto;
 import com.team01.backend.domain.post.dto.PostResponseDto;
-import com.team01.backend.domain.post.dto.PostSummaryDto;
 import com.team01.backend.domain.post.entity.Post;
 import com.team01.backend.domain.post.repository.PostLikeRepository;
 import com.team01.backend.domain.post.repository.PostRepository;
@@ -114,8 +113,8 @@ public class PostService {
 
     // 게시판별 게시글 목록 페이징 조회 (키워드 검색, 카테고리 필터 포함)
     public PostPageResponseDto getPostsByBoardId(Long boardId, int page, String keyword, Long categoryId, String sort) {
-        boardRepository.findByIdAndIsDeletedFalse(boardId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 게시판입니다."));
+//        boardRepository.findByIdAndIsDeletedFalse(boardId)
+//                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 게시판입니다."));
 
         Pageable pageable = toPageable(page);
 
