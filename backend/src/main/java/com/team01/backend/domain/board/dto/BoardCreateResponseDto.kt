@@ -8,7 +8,7 @@ data class BoardCreateResponseDto(
     val id: Long,
     val name: String,
     val description: String,
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     val createdAt: LocalDateTime
 ) {
     constructor(board: Board) : this(
