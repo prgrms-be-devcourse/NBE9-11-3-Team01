@@ -51,10 +51,20 @@ data class PostDetailResponseDto(
                         profileImage = post.author.profileImage,
                         likeCount = post.likeCount,
                         liked = isLiked,
-                        createdAt = post.createdAt,
-                        modifiedAt = post.modifiedAt,
+                        createdAt = post.createdAt ?: throw IllegalStateException("Post createdAt is null"),
+                        modifiedAt = post.modifiedAt ?: throw IllegalStateException("Post modifiedAt is null"),
                         comments = comments,
                         owner = isOwner,
                 )
+
+                @JvmStatic
+                fun from(
+                        post: Post,
+                        board: Board,
+                        category: Category,
+                        comments: List<CommentReadResponseDto>,
+                        isOwner: Boolean,
+                        isLiked: Boolean,
+                ): PostDetailResponseDto = of(post, board, category, comments, isOwner, isLiked)
         }
 }
