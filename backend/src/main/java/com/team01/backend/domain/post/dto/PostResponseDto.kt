@@ -18,20 +18,21 @@ data class PostResponseDto(
     @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     val modifiedAt: LocalDateTime,
 ) {
-    constructor(post: Post) : this(
-        id = post.id ?: throw IllegalStateException("Post id is null"),
-        title = post.title,
-        author = post.author.nickname,
-        profileImage = post.author.profileImage,
-        categoryId = post.category.id ?: throw IllegalStateException("Category id is null"),
-        categoryName = post.category.name,
-        likeCount = post.likeCount,
-        createdAt = post.createdAt ?: throw IllegalStateException("createdAt is null"),
-        modifiedAt = post.modifiedAt ?: throw IllegalStateException("modifiedAt is null"),
-    )
-
     companion object {
         @JvmStatic
-        fun of(post: Post): PostResponseDto = PostResponseDto(post)
+        fun of(post: Post): PostResponseDto = PostResponseDto(
+            id = post.id ?: throw IllegalStateException("Post id is null"),
+            title = post.title,
+            author = post.author.nickname,
+            profileImage = post.author.profileImage,
+            categoryId = post.category.id ?: throw IllegalStateException("Category id is null"),
+            categoryName = post.category.name,
+            likeCount = post.likeCount,
+            createdAt = post.createdAt ?: throw IllegalStateException("Post createdAt is null"),
+            modifiedAt = post.modifiedAt ?: throw IllegalStateException("Post modifiedAt is null"),
+        )
+
+        @JvmStatic
+        fun from(post: Post): PostResponseDto = of(post)
     }
 }
