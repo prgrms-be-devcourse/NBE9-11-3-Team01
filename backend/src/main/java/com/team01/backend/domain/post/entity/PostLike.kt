@@ -3,8 +3,6 @@ package com.team01.backend.domain.post.entity
 import com.team01.backend.domain.user.entity.User
 import com.team01.backend.global.entity.BaseEntity
 import jakarta.persistence.*
-import lombok.Getter
-import lombok.NoArgsConstructor
 
 /**
  * 좋아요 이력 테이블
