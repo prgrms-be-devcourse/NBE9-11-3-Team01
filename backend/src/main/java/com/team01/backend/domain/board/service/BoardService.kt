@@ -1,95 +1,91 @@
-package com.team01.backend.domain.board.service;
+package com.team01.backend.domain.board.service
 
-import com.team01.backend.domain.board.dto.*;
-import com.team01.backend.domain.board.entity.Board;
-import com.team01.backend.domain.board.repository.BoardRepository;
-import com.team01.backend.domain.post.repository.PostRepository;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.team01.backend.domain.board.dto.*
+import com.team01.backend.domain.board.entity.Board
+import com.team01.backend.domain.board.repository.BoardRepository
+import com.team01.backend.domain.post.repository.PostRepository
+import jakarta.persistence.EntityNotFoundException
+import jakarta.transaction.Transactional
+import lombok.RequiredArgsConstructor
+import org.springframework.stereotype.Service
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class BoardService {
-    private final BoardRepository boardRepository;
-    private final PostRepository postRepository;
+class BoardService(
+    private val boardRepository: BoardRepository,
+    private val postRepository: PostRepository
+) {
 
     // 게시판 생성, dto 형식으로 반환
     @Transactional
-    public BoardCreateResponseDto createBoard(String name, String description){
+    fun createBoard(name: String,description: String): BoardCreateResponseDto{
         // 삭제되지 않은 게시판 중 중복이 있는지 확인
         if(boardRepository.existsByNameAndIsDeletedFalse(name)){
-            throw new IllegalArgumentException("중복된 이름입니다");
+            throw  IllegalArgumentException("중복된 이름입니다")
         }
-        Board board = new Board(name, description);
-        boardRepository.save(board);
-        return new BoardCreateResponseDto(board);
+        val board: Board = Board(name, description)
+        boardRepository.save(board)
+        return BoardCreateResponseDto(board)
     }
-
     // 게시판 목록 조회
-    public List<BoardResponse> getAllBoards() {
-        List<Board> boards = boardRepository.findAllByIsDeletedFalse();
+    fun getAllBoards(): List<BoardResponse> {
+        val boards: List<Board> = boardRepository.findAllByIsDeletedFalse()
 
         // 게시판별 게시글 수 한 번에 조회 (N+1 방지)
-        Map<Long, Long> postCountMap = postRepository.countByBoardGrouped()
-                .stream()
-                .collect(Collectors.toMap(
-                        row -> (Long) row[0],
-                        row -> (Long) row[1]
-                ));
+        val postCountMap = postRepository.countByBoardGrouped()
+            .associate { row -> (row[0] as Long) to (row[1] as Long) }
 
-        return boards.stream()
-                .map(board -> BoardResponse.from(
-                        board,
-                        postCountMap.getOrDefault(board.getId(), 0L)
-                ))
-                .toList();
+        return boards
+            .map {
+                    board: Board ->
+                BoardResponse.from(
+                    board,
+                    postCountMap[board.id] ?:0L
+                )
+            }
     }
 
     // 관리자 게시판 목록 조회 (삭제된것까지 포함해서)
-    public AdminBoardListResponseDto getAllBoardsByAdmin() {
-        List<AdminBoardResponseDto> exist = boardRepository.findAllByIsDeletedFalse()
-                .stream()
-                .map(AdminBoardResponseDto::new)
-                .toList();
-        List<AdminBoardResponseDto> deleted = boardRepository.findAllByIsDeletedTrue()
-                .stream()
-                .map(AdminBoardResponseDto::new)
-                .toList();
-        return new AdminBoardListResponseDto(exist, deleted);
+    fun getAllBoardsByAdmin(): AdminBoardListResponseDto{
+        val exist: List<AdminBoardResponseDto> = boardRepository.findAllByIsDeletedFalse()
+            .map{board: Board-> AdminBoardResponseDto(board)}
+        val deleted: List<AdminBoardResponseDto> = boardRepository.findAllByIsDeletedTrue()
+            .map{board -> AdminBoardResponseDto(board)}
+        return  AdminBoardListResponseDto(exist, deleted);
     }
 
     // 게시판 수정, dto 형식으로 반환
     @Transactional
-    public BoardUpdateResponseDto updateBoard(Long id, String name, String description) {
-        Board board = boardRepository.findByIdAndIsDeletedFalse(id).orElseThrow(EntityNotFoundException::new);
+    fun updateBoard(id: Long, name: String , description: String): BoardUpdateResponseDto {
+        val board: Board? = boardRepository.findByIdAndIsDeletedFalse(id)
         if(boardRepository.existsByNameAndIsDeletedFalse(name)){
-            throw new IllegalArgumentException("중복된 이름입니다");
+            throw IllegalArgumentException("중복된 이름입니다");
         }
-        board.update(name, description);
-        boardRepository.save(board);
-        return new BoardUpdateResponseDto(board);
+        board?.let{
+            it.update(name, description)
+            boardRepository.save(board)
+        }?:throw EntityNotFoundException("")
+
+        return BoardUpdateResponseDto(board)
     }
 
     // board 수 반환
-    public long count() {
+    fun count(): Long {
         return boardRepository.count();
     }
 
     // 게시판 삭제
     @Transactional
-    public void deleteBoard(Long id) {
-        Board board = boardRepository.findByIdAndIsDeletedFalse(id).orElseThrow(EntityNotFoundException::new); // 없는 id, 삭제된 게시판 예외 처리
-        board.setDeleted(true); // soft delete
-        boardRepository.save(board);
+    fun deleteBoard(id: Long){
+        val board: Board? = boardRepository.findByIdAndIsDeletedFalse(id)
+        board?.let{  // soft delete
+            it.isDeleted = true
+            boardRepository.save(board)
+        }?:throw EntityNotFoundException("") // 없는 id, 삭제된 게시판 예외 처리
     }
 
-    public boolean existsById(Long id) {
-        return boardRepository.existsById(id);
+    fun existsById(id: Long):Boolean {
+        return boardRepository.existsById(id)
     }
 }

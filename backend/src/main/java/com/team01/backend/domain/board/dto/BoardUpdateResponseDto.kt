@@ -1,26 +1,23 @@
-package com.team01.backend.domain.board.dto;
+package com.team01.backend.domain.board.dto
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.team01.backend.domain.board.entity.Board;
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.team01.backend.domain.board.entity.Board
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
-
-public record BoardUpdateResponseDto (
-        Long id,
-        String name,
-        String description,
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime createdAt,
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime modifiedAt
+data class BoardUpdateResponseDto(
+    val id: Long,
+    val name: String,
+    val description: String,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    val createdAt: LocalDateTime,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    val modifiedAt: LocalDateTime
 ) {
-    public BoardUpdateResponseDto(Board board) {
-        this(
-                board.getId(),
-                board.getName(),
-                board.getDescription(),
-                board.getCreatedAt(),
-                board.getModifiedAt()
-        );
-    }
+    constructor(board: Board) : this(
+        board.id,
+        board.name,
+        board.description,
+        board.createdAt,
+        board.modifiedAt
+    )
 }

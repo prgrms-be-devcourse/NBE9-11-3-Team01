@@ -1,35 +1,30 @@
-package com.team01.backend.domain.board.entity;
+package com.team01.backend.domain.board.entity
 
-import com.team01.backend.global.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.team01.backend.global.entity.BaseEntity
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Table
+import lombok.Getter
 
 @Entity
 @Getter
-@NoArgsConstructor
 @Table(name = "boards")
-public class Board extends BaseEntity {
+class Board : BaseEntity {
     @Column(nullable = false, length = 50)
-    private String name;
+    var name: String=""
 
     @Column(length = 200)
-    private String description;
+    var description: String=""
 
-    @Setter
-    private boolean isDeleted;
+    var isDeleted: Boolean = false
 
-    public Board(String name, String description){
-        this.name = name;
-        this.description = description;
-        this.isDeleted = false;
+    constructor(name: String, description: String){
+        this.name = name
+        this.description = description
     }
 
-    public void update(String name, String description) { // 게시판 수정
-        this.name = name;
-        this.description = description;
+    fun update(name: String, description: String) { // 게시판 수정
+        this.name = name
+        this.description = description
     }
 }

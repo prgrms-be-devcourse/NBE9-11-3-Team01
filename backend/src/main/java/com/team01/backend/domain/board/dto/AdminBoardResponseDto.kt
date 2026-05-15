@@ -5,24 +5,23 @@ import com.team01.backend.domain.board.entity.Board;
 
 import java.time.LocalDateTime;
 
-public record AdminBoardResponseDto(
-        Long id,
-        String boardName,
-        String description,
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime createdAt,
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime modifiedAt,
-        boolean isDeleted
+data class AdminBoardResponseDto(
+    val id: Long,
+    val boardName: String,
+    val description: String,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    val createdAt: LocalDateTime,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    val modifiedAt: LocalDateTime,
+    val isDeleted: Boolean
 ) {
-    public AdminBoardResponseDto(Board board){
-        this(
-                board.getId(),
-                board.getName(),
-                board.getDescription(),
-                board.getCreatedAt(),
-                board.getModifiedAt(),
-                board.isDeleted()
-        );
-    }
+    constructor (board: Board):this(
+        board.id,
+        board.name,
+        board.description,
+        board.createdAt,
+        board.modifiedAt,
+        board.isDeleted
+    )
+
 }
