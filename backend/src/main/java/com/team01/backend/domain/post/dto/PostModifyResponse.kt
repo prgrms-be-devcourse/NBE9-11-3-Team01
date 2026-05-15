@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.team01.backend.domain.post.entity.Post
 import java.time.LocalDateTime
 
-@JvmRecord
+
 data class PostModifyResponse(
     val id: Long?,
     val title: String,
