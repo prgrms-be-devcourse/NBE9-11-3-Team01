@@ -116,7 +116,10 @@ class PostService(
             ?.let { userRepository.findByEmail(it).orElse(null) }
         val isOwner = currentUser != null && post.author.id == currentUser.id
         val isLiked = currentUser != null &&
-                postLikeRepository.findByUserIdAndPostId(currentUser.id ?: 0L, postId) != null
+                postLikeRepository.findByUserIdAndPostId(
+                    currentUser.id ?: throw IllegalStateException("사용자 ID가 없습니다."),
+                    postId
+                ) != null
         val comments = commentService.getCommentsByPostId(postId, currentUser?.email)
 
         return PostDetailResponseDto.of(post, post.board, post.category, comments, isOwner, isLiked)
