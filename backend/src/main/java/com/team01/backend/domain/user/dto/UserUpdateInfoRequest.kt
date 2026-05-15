@@ -14,8 +14,8 @@ data class UserUpdateInfoRequest(
 
     // 정규식 설명: /images/profile/ 경로로 시작하며 허용된 확장자만 허용함 (XSS 방어)
     @field:Pattern(
-        regexp = "^/images/profile/[a-zA-Z0-9_\\-]+\\.(jpg|jpeg|png|gif|webp)$",
-        message = "올바르지 않은 이미지 경로 형식입니다."
+        regexp = "^/static/images/.*$",
+        message = "프로필 이미지는 /static/images/ 경로로 시작해야 합니다."
     )
     val profileImage: String? = null,
 

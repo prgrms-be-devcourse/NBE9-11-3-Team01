@@ -2,6 +2,7 @@ package com.team01.backend.domain.user.dto
 
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
 /**
@@ -24,7 +25,11 @@ data class SignUpRequest(
     @field:NotBlank(message = "닉네임은 필수 입력 사항입니다.")
     val nickname: String,
 
-    // 프로필 이미지 주소: 선택 사항이며, 입력하지 않을 경우 기본 프로필로 처리됩니다.
+    // 프로필 이미지 주소: 선택 사항이며, 정적 이미지 경로만 허용합니다.
+    @field:Pattern(
+        regexp = "^/static/images/.*$",
+        message = "프로필 이미지는 /static/images/ 경로로 시작해야 합니다."
+    )
     val profileImage: String? = null
 
     // 보안 강화: 관리자 가입 토큰 및 권한 요청 필드는 보안상 위험하여 삭제하였습니다.
