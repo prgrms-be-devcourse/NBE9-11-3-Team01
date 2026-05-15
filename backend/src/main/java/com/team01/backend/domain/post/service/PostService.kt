@@ -116,7 +116,7 @@ class PostService(
             ?.let { userRepository.findByEmail(it).orElse(null) }
         val isOwner = currentUser != null && post.author.id == currentUser.id
         val isLiked = currentUser != null &&
-                postLikeRepository.findByUserIdAndPostId(currentUser.id, postId).isPresent
+                postLikeRepository.findByUserIdAndPostId(currentUser.id ?: 0L, postId) != null
         val comments = commentService.getCommentsByPostId(postId, currentUser?.email)
 
         return PostDetailResponseDto.of(post, post.board, post.category, comments, isOwner, isLiked)
