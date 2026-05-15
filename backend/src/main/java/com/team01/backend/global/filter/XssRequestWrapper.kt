@@ -1,34 +1,41 @@
 package com.team01.backend.global.filter;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.ReadListener
+import jakarta.servlet.ServletInputStream
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequestWrapper
+import java.io.BufferedReader
+import java.io.ByteArrayInputStream
+import java.io.StringReader
 
 // 요청 파라미터의 XSS 방지 처리를 위한 래퍼 클래스
-public class XssRequestWrapper extends HttpServletRequestWrapper {
+class XssRequestWrapper(request: HttpServletRequest) : HttpServletRequestWrapper(request) {
 
-    public XssRequestWrapper(HttpServletRequest request) {
-        super(request);
+    override fun getParameter(name: String?): String? =
+        sanitize(super.getParameter(name))
+
+    override fun getParameterValues(name: String?): Array<String?>? =
+        super.getParameterValues(name)?.map { sanitize(it) }?.toTypedArray()
+
+    override fun getReader(): BufferedReader {
+        val sanitized = sanitize(request.inputStream.bufferedReader().readText())
+        return BufferedReader(StringReader(sanitized ?: ""))
     }
 
-    @Override
-    public String getParameter(String name) {
-        String value = super.getParameter(name);
-        return sanitize(value);
-    }
-
-    @Override
-    public String[] getParameterValues(String name) {
-        String[] values = super.getParameterValues(name);
-        if (values == null) return null;
-        for (int i = 0; i < values.length; i++) {
-            values[i] = sanitize(values[i]);
+    override fun getInputStream(): ServletInputStream {
+        val sanitized = sanitize(request.inputStream.bufferedReader().readText()) ?: ""
+        val bytes = sanitized.toByteArray()
+        return object : ServletInputStream() {
+            private val stream = ByteArrayInputStream(bytes)
+            override fun read() = stream.read()
+            override fun isFinished() = stream.available() == 0
+            override fun isReady() = true
+            override fun setReadListener(listener: ReadListener) {}
         }
-        return values;
     }
 
-    // 특수문자 제거로 XSS 방지
-    private String sanitize(String value) {
-        if (value == null) return null;
-        return value.replace("<", "").replace(">", "").replace("&", "");
-    }
+    private fun sanitize(value: String?): String? =
+        value?.replace("&", "&amp;")
+            ?.replace("<", "&lt;")
+            ?.replace(">", "&gt;")
 }
