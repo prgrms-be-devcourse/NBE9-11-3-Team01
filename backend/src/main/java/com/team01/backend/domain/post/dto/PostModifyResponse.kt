@@ -6,46 +6,38 @@ import java.time.LocalDateTime
 
 
 data class PostModifyResponse(
-    val id: Long?,
+    val id: Long,
     val title: String,
     val content: String,
-    val boardId: Long?,
+    val boardId: Long,
     val boardName: String,
-    val categoryId: Long?,
+    val categoryId: Long,
     val categoryName: String,
-    val authorId: Long?,
+    val authorId: Long,
     val authorNickname: String,
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    val createdAt: LocalDateTime?,
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    val modifiedAt: LocalDateTime?
+    @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    val createdAt: LocalDateTime,
+    @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    val modifiedAt: LocalDateTime
 ) {
-        // 컨벤션 3번: 정적 팩토리 메서드 of 사용
-        companion object {
-            @JvmStatic
-            fun of(post: Post): PostModifyResponse {
-                return PostModifyResponse(
-                    // [수정] .id 대신 .getId() 메서드를 직접 호출
-                    id = post.getId(),
-                    title = post.title,
-                    content = post.content,
+    constructor(post: Post) : this(
+        id = post.id ?: throw IllegalStateException("Post id is null"),
+        title = post.title,
+        content = post.content,
+        boardId = post.board?.id ?: throw IllegalStateException("Board id is null"),
+        boardName = post.board?.name ?: "",
+        categoryId = post.category?.id ?: throw IllegalStateException("Category id is null"),
+        categoryName = post.category?.name ?: "",
+        authorId = post.author?.id ?: throw IllegalStateException("Member id is null"),
+        authorNickname = post.author?.nickname ?: "",
+        createdAt = post.createdAt ?: throw IllegalStateException("createdAt is null"),
+        modifiedAt = post.modifiedAt ?: throw IllegalStateException("modifiedAt is null")
+    )
 
-                    // 연관 엔티티들도 게터로 접근
-                    boardId = post.board?.getId(),
-                    boardName = post.board?.name ?: "",
-
-                    categoryId = post.category?.getId(),
-                    categoryName = post.category?.name ?: "",
-
-                    authorId = post.author?.getId(),
-                    authorNickname = post.author?.nickname ?: "",
-
-                    // BaseEntity 필드들도 게터로 접근
-                    createdAt = post.getCreatedAt(),
-                    modifiedAt = post.getModifiedAt()
-                )
-            }
-        }
+    companion object {
+        // 컨벤션: 정적 팩토리 메서드 of 사용
+        @JvmStatic
+        fun of(post: Post): PostModifyResponse = PostModifyResponse(post)
     }
-
+}
