@@ -68,18 +68,36 @@ public class BaseInitData {
     @Transactional
     public void setMember() {
 
-        if (userRepository.count() > 0) return;
-        authService.signUp(SignUpRequest.builder().email("user1@test.com").password("password1234").nickname("유저1").build());
-        authService.signUp(SignUpRequest.builder().email("user2@test.com").password("password1234").nickname("유저2").build());
-        authService.signUp(SignUpRequest.builder().email("admin@admin.com").password("passworda12345").nickname("admin").admin(true).adminToken("user_admin-2026").build());
+		// [수정] 코틀린 SignUpRequest는 더 이상 빌더를 지원하지 않으므로 생성자를 호출합니다.
+        // 생성자 순서: email, password, nickname, profileImage, admin, adminToken
 
-        // 테스트용 유저 30명
-        for (int i = 1; i <= 30; i++) {
-            authService.signUp(SignUpRequest.builder()
-                    .email("test" + i + "@test.com")
-                    .password("password1234")
-                    .nickname("테스터" + i)
-                    .build());
+		// 1. 테스트 사용자 1 생성
+        authService.signUp(new SignUpRequest(
+            "user1@test.com", 
+            "password1234", 
+            "유저1", 
+            null
+        ));
+
+        // 2. 테스트 사용자 2 생성
+        authService.signUp(new SignUpRequest(
+            "user2@test.com", 
+            "password1234", 
+            "유저2", 
+            null
+        ));
+
+		// [안내] 관리자 계정(admin@admin.com)은 보안 지침에 따라 
+        // 운영 스크립트 또는 DB에 직접 삽입(SQL)하여 생성하시기 바랍니다.
+
+        // 4. 대량 테스트 데이터 생성 (선택 사항)
+        for (int i = 3; i <= 40; i++) {
+            authService.signUp(new SignUpRequest(
+                "user" + i + "@test.com",
+                "password1234",
+                "테스트유저" + i,
+                null
+            ));
         }
     }
 
