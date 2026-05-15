@@ -5,7 +5,10 @@ import com.team01.backend.domain.post.service.PostService
 import com.team01.backend.global.response.ApiResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -58,15 +61,19 @@ class PostController(
             ),
         )
 
-    /*// 인기글 5개 조회 api
+    // 인기글 5개 조회 api
     @Operation(summary = "실시간 인기글 조회", description = "게시판별 \"좋아요\"를 많이 받은 5개의 게시물 노출")
-    @GetMapping("boards/{boardId}/posts/top5")
-    public ResponseEntity<ApiResponse<List<PostResponseDto>>> getTop5Posts(
-            @PathVariable Long boardId
-    ) {
-        List<PostResponseDto> posts = postService.getTop5Posts(boardId);
-        return ResponseEntity.ok(ApiResponse.ofSuccess(posts));
-    }*/
+    @GetMapping("/boards/{boardId}/posts/top5")
+    fun getTop5Posts(
+        @PathVariable boardId: Long
+    ): ResponseEntity<ApiResponse<List<PostResponseDto>>> {
+
+        val posts: List<PostResponseDto> = postService.getTop5Posts(boardId)
+
+        return ResponseEntity.ok(
+            ApiResponse.ofSuccess(posts)
+        )
+    }
 
     // 게시글 상세 조회
     @Operation(summary = "게시글 상세 조회", description = "비로그인 사용자 접근 불가, 작성자 여부 포함")
@@ -81,108 +88,102 @@ class PostController(
     }
 
 
-    /*record PostWriteReqBody(
-            @Size(min = 2, message = "제목은 2자 이상이어야 합니다.")
-            @NotBlank(message = "제목은 공백일 수 없습니다.")
-            String title,
+    data class PostWriteReqBody(
+        @field:NotBlank(message = "제목은 공백일 수 없습니다.")
+        @field:Size(min = 2, message = "제목은 2자 이상이어야 합니다.")
+        val title: String,
 
-            @Size(min = 2, message = "내용은 2자 이상이어야 합니다.")
-            @NotBlank(message = "내용은 공백일 수 없습니다.")
-            String content,
+        @field:NotBlank(message = "내용은 공백일 수 없습니다.")
+        @field:Size(min = 2, message = "내용은 2자 이상이어야 합니다.")
+        val content: String,
 
-            @NotNull(message = "게시판 선택은 필수입니다.")
-            Long boardId,
+        @field:NotNull(message = "게시판 선택은 필수입니다.")
+        val boardId: Long,
 
-            @NotNull(message = "카테고리 선택은 필수입니다.")
-            Long categoryId
-    ){
-    }*/
+        @field:NotNull(message = "카테고리 선택은 필수입니다.")
+        val categoryId: Long
+    )
 
-    /*// 글 작성 api
+    // 글 작성 api
     @Operation(summary = "글 작성", description = "비로그인 사용자 접근 불가")
     @PostMapping("/posts")
-    public ResponseEntity<ApiResponse<PostWriteResponse>> write(
-            @RequestBody @Valid PostWriteReqBody reqBody,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
+    fun write(
+        @RequestBody @Valid reqBody: PostWriteReqBody,
+        @AuthenticationPrincipal userDetails: UserDetails?
+    ): ResponseEntity<ApiResponse<PostWriteResponse>> {
 
-        // 비로그인 사용자에 대한 예외 처리
-        if (userDetails == null) {
-            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
-        }
+        val username = requireLogin(userDetails)
 
-        Post post = postService.write(
-                userDetails.getUsername(),
-                reqBody.title,
-                reqBody.content,
-                reqBody.boardId,
-                reqBody.categoryId
-        );
+        val post = postService.write(
+            username,
+            reqBody.title,
+            reqBody.content,
+            reqBody.boardId,
+            reqBody.categoryId
+        )
 
-        long postsCount = postService.count();
+        val postsCount = postService.count()
 
         return ResponseEntity.ok(
-                ApiResponse.ofSuccess(
-                       PostWriteResponse.of(post, postsCount)
-                )
-        );
-    }*/
+            ApiResponse.ofSuccess(
+                PostWriteResponse.of(post, postsCount)
+            )
+        )
+    }
 
-    /*record PostModifyReqBody(
-            @Size(min = 2, message = "제목은 2자 이상이어야 합니다.")
-            @NotBlank(message = "제목은 공백일 수 없습니다.")
-            String title,
 
-            @Size(min = 2, message = "내용은 2자 이상이어야 합니다.")
-            @NotBlank(message = "내용은 공백일 수 없습니다.")
-            String content,
+    data class PostModifyReqBody(
+        @field:NotBlank(message = "제목은 공백일 수 없습니다.")
+        @field:Size(min = 2, message = "제목은 2자 이상이어야 합니다.")
+        val title: String,
 
-            @NotNull(message = "카테고리 선택은 필수입니다.")
-            Long categoryId
-    ) {
-    }*/
+        @field:NotBlank(message = "내용은 공백일 수 없습니다.")
+        @field:Size(min = 2, message = "내용은 2자 이상이어야 합니다.")
+        val content: String,
 
-    /*// 글 수정 api
+        @field:NotNull(message = "카테고리 선택은 필수입니다.")
+        val categoryId: Long
+    )
+
+    // 글 수정 api
     @Operation(summary = "글 수정", description = "비로그인 사용자 접근 불가, 원글 작성자만 수정 가능")
     @PutMapping("/posts/{postId}")
-    public ResponseEntity<ApiResponse<PostModifyResponse>> modify(
-            @PathVariable("postId") Long postId,
-            @RequestBody @Valid PostModifyReqBody reqBody,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
+    fun modify(
+        @PathVariable("postId") postId: Long,
+        @RequestBody @Valid reqBody: PostModifyReqBody,
+        @AuthenticationPrincipal userDetails: UserDetails?
+    ): ResponseEntity<ApiResponse<PostModifyResponse>> {
 
-        if (userDetails == null) {
-            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
-        }
+        val username = requireLogin(userDetails)
 
-        Post post = postService.modify(
-                postId,
-                userDetails.getUsername(),
-                reqBody.title(),
-                reqBody.content(),
-                reqBody.categoryId);
+        val post = postService.modify(
+            postId,
+            username,
+            reqBody.title,
+            reqBody.content,
+            reqBody.categoryId
+        )
 
         return ResponseEntity.ok(
-                ApiResponse.ofSuccess(PostModifyResponse.Companion.of(post))
-        );
-    }*/
+            ApiResponse.ofSuccess(PostModifyResponse.of(post))
+        )
+    }
 
-    /*// 글 삭제 api
+    // 글 삭제 api
     @Operation(summary = "글 삭제", description = "비로그인 사용자 접근 불가, 원글 작성자만 삭제 가능")
     @DeleteMapping("/posts/{postId}")
-    public ResponseEntity<ApiResponse<Void>> delete(
-            @PathVariable("postId") Long postId,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
+    fun delete(
+        @PathVariable("postId") postId: Long,
+        @AuthenticationPrincipal userDetails: UserDetails?
+    ): ResponseEntity<ApiResponse<Void>> {
 
-        if (userDetails == null) {
-            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
-        }
+        val username = requireLogin(userDetails)
 
-        postService.delete(postId, userDetails.getUsername());
+        postService.delete(postId, username)
+
 
         return ResponseEntity.ok(
-                ApiResponse.ofSuccess(null)
-        );
-    }*/
+            ApiResponse.ofSuccessWithoutBody()
+        )
+    }
 }
