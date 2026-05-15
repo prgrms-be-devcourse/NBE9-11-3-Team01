@@ -71,6 +71,7 @@ public class BaseInitData {
 		// [수정] 코틀린 SignUpRequest는 더 이상 빌더를 지원하지 않으므로 생성자를 호출합니다.
         // 생성자 순서: email, password, nickname, profileImage, admin, adminToken
 
+		if (userRepository.count() > 0) return;
 		// 1. 테스트 사용자 1 생성
         authService.signUp(new SignUpRequest(
             "user1@test.com", 
