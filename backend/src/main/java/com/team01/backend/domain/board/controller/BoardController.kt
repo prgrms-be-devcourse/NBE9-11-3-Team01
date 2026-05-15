@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 class BoardController(
         private val boardService: BoardService,
         private val categoryService: CategoryService,
-        ) {
+) {
     // 게시판 목록 조회
     @Operation(summary = "게시판 목록 조회", description = "게시판별 게시글 수 포함")
     @GetMapping
@@ -27,7 +27,6 @@ class BoardController(
         ResponseEntity.ok(ApiResponse.ofSuccess(ArrayList(boardService.getAllBoards())))
 
     // 게시판별 카테고리 목록 조회 (비로그인 허용, 글쓰기 페이지 카테고리 선택용)
-
     @GetMapping("/{boardId}/categories")
     fun getCategoriesByBoard(
         @PathVariable boardId: Long,
