@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.team01.backend.domain.board.entity.Board
 import com.team01.backend.domain.board.repository.BoardRepository
+import com.team01.backend.domain.category.entity.QCategory.category
 import com.team01.backend.domain.category.repository.CategoryRepository
 import com.team01.backend.domain.comment.service.CommentService
 import com.team01.backend.domain.post.dto.PostDetailResponseDto
@@ -81,8 +82,11 @@ class PostService(
         val board = boardRepository.findById(boardId)
             .orElseThrow { EntityNotFoundException("존재하지 않는 게시판입니다.") }
 
-        val category = categoryRepository.findById(categoryId)
-            .orElseThrow { EntityNotFoundException("존재하지 않는 카테고리입니다.") }
+        // 검증 메서드 실행 (여기서 실제 DB 조회 / 게시판-카테고리 소속 검증 완료)
+        validateCategoryInBoard(categoryId, boardId)
+
+        // 레포지토리 수정 없이 내장 메서드로 객체 확보 (추가 쿼리 발생 X)
+        val category = categoryRepository.getReferenceById(categoryId)
 
         val post = Post(
             author = author,
