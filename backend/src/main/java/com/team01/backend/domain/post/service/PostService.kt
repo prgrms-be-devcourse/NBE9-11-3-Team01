@@ -79,8 +79,9 @@ class PostService(
             .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
 
         // 게시판, 카테고리 조회
-        val board = boardRepository.findById(boardId)
-            .orElseThrow { EntityNotFoundException("존재하지 않는 게시판입니다.") }
+        // TODO: Board 엔티티 리팩토링(isDeleted -> deleted) 완료 후 findByIdAndDeletedFalse로 변경할 것
+        val board = boardRepository.findByIdAndIsDeletedFalse(boardId)
+            ?: throw EntityNotFoundException("존재하지 않는 게시판입니다.")
 
         // 검증 메서드 실행 (여기서 실제 DB 조회 / 게시판-카테고리 소속 검증 완료)
         validateCategoryInBoard(categoryId, boardId)
