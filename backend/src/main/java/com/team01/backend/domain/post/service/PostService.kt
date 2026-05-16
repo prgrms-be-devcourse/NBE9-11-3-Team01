@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.team01.backend.domain.board.entity.Board
 import com.team01.backend.domain.board.repository.BoardRepository
-import com.team01.backend.domain.category.entity.QCategory.category
 import com.team01.backend.domain.category.repository.CategoryRepository
 import com.team01.backend.domain.comment.service.CommentService
 import com.team01.backend.domain.post.dto.PostDetailResponseDto
