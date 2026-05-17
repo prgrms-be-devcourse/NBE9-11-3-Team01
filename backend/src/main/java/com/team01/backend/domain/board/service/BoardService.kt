@@ -86,6 +86,6 @@ class BoardService(
     }
 
     fun existsById(id: Long):Boolean {
-        return boardRepository.existsById(id)
+        return boardRepository.existsByIdAndDeletedFalse(id)
     }
 }

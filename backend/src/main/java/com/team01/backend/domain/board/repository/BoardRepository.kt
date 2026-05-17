@@ -8,4 +8,5 @@ interface BoardRepository : JpaRepository<Board,Long> {
     fun findAllByDeletedFalse(): List<Board>
     fun findAllByDeletedTrue(): List<Board>
     fun existsByNameAndDeletedFalse(name: String): Boolean
+    fun existsByIdAndDeletedFalse(id: Long): Boolean
 }
