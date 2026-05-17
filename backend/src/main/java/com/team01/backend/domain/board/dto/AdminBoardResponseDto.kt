@@ -2,7 +2,6 @@ package com.team01.backend.domain.board.dto
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.team01.backend.domain.board.entity.Board
-
 import java.time.LocalDateTime
 
 data class AdminBoardResponseDto(
@@ -23,5 +22,16 @@ data class AdminBoardResponseDto(
         board.modifiedAt,
         board.deleted
     )
-
+    companion object {
+        @JvmStatic
+        fun from(board: Board): AdminBoardResponseDto =
+            AdminBoardResponseDto(
+                id = board.id,
+                boardName = board.name,
+                description = board.description,
+                createdAt = board.createdAt,
+                modifiedAt = board.modifiedAt,
+                isDeleted = board.deleted
+            )
+    }
 }

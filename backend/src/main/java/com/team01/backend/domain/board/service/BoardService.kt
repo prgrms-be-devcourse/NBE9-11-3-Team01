@@ -67,7 +67,7 @@ class BoardService(
             boardRepository.save(board)
         }?:throw EntityNotFoundException("")
 
-        return BoardUpdateResponseDto(board)
+        return BoardUpdateResponseDto.from(board)
     }
 
     // board 수 반환

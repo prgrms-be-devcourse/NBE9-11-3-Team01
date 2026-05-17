@@ -20,4 +20,15 @@ data class BoardUpdateResponseDto(
         board.createdAt,
         board.modifiedAt
     )
+    companion object {
+        @JvmStatic
+        fun from(board: Board): BoardUpdateResponseDto =
+            BoardUpdateResponseDto(
+                id = board.id,
+                name = board.name,
+                description = board.description,
+                createdAt = board.createdAt,
+                modifiedAt = board.modifiedAt,
+            )
+    }
 }

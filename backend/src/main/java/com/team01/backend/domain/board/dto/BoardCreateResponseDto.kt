@@ -17,4 +17,14 @@ data class BoardCreateResponseDto(
         board.description,
         board.createdAt
     )
+    companion object {
+        @JvmStatic
+        fun from(board: Board): BoardCreateResponseDto =
+            BoardCreateResponseDto(
+                id = board.id,
+                name = board.name,
+                description = board.description,
+                createdAt = board.createdAt,
+            )
+    }
 }
