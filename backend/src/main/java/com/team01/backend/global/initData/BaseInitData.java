@@ -68,18 +68,37 @@ public class BaseInitData {
     @Transactional
     public void setMember() {
 
-        if (userRepository.count() > 0) return;
-        authService.signUp(SignUpRequest.builder().email("user1@test.com").password("password1234").nickname("유저1").build());
-        authService.signUp(SignUpRequest.builder().email("user2@test.com").password("password1234").nickname("유저2").build());
-        authService.signUp(SignUpRequest.builder().email("admin@admin.com").password("passworda12345").nickname("admin").admin(true).adminToken("user_admin-2026").build());
+		// [수정] 코틀린 SignUpRequest는 더 이상 빌더를 지원하지 않으므로 생성자를 호출합니다.
+        // 생성자 순서: email, password, nickname, profileImage, admin, adminToken
 
-        // 테스트용 유저 10명
-        for (int i = 1; i <= 30; i++) {
-            authService.signUp(SignUpRequest.builder()
-                    .email("test" + i + "@test.com")
-                    .password("password1234")
-                    .nickname("테스터" + i)
-                    .build());
+		if (userRepository.count() > 0) return;
+		// 1. 테스트 사용자 1 생성
+        authService.signUp(new SignUpRequest(
+            "user1@test.com", 
+            "password1234", 
+            "유저1", 
+            null
+        ));
+
+        // 2. 테스트 사용자 2 생성
+        authService.signUp(new SignUpRequest(
+            "user2@test.com", 
+            "password1234", 
+            "유저2", 
+            null
+        ));
+
+		// [안내] 관리자 계정(admin@admin.com)은 보안 지침에 따라 
+        // 운영 스크립트 또는 DB에 직접 삽입(SQL)하여 생성하시기 바랍니다.
+
+        // 4. 대량 테스트 데이터 생성 (선택 사항)
+        for (int i = 3; i <= 40; i++) {
+            authService.signUp(new SignUpRequest(
+                "user" + i + "@test.com",
+                "password1234",
+                "테스트유저" + i,
+                null
+            ));
         }
     }
 
@@ -115,12 +134,83 @@ public class BaseInitData {
         Category category3 = categoryRepository.findById(3L)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        postRepository.save(new Post(author1, "첫 번째 게시글입니다.", "내용 1", board, category1));
-        postRepository.save(new Post(author2, "두 번째 게시글입니다.", "내용 2", board, category1));
-        postRepository.save(new Post(author2, "세 번째 게시글입니다.", "내용 3", board, category2));
-        postRepository.save(new Post(author1, "네 번째 게시글입니다.", "내용 4", board, category2));
-        postRepository.save(new Post(author1, "다섯 번째 게시글입니다.", "내용 5", board, category3));
-        postRepository.save(new Post(author2, "여섯 번째 게시글입니다.", "내용 6", board, category3));
+        for (int i = 1; i <= 15; i++) {
+            Post post = new Post(author1, i + "번째 게시글입니다.", "내용 " + i, board, category1);
+            postRepository.save(post);
+        }
+        Post post1 = new Post(author2, "2026 삼성전자 상반기 공채 일정 총정리",
+                "삼성전자 상반기 공채 일정 공식 발표 기준으로 정리했습니다.\n" +
+                        "틀린 부분 있으면 댓글로 알려주세요!\n" +
+                        "\n" +
+                        "\uD83D\uDCCC 전체 일정\n" +
+                        "- 서류 접수: 3월 10일 ~ 3월 31일\n" +
+                        "- GSAT: 4월 19일 (토)\n" +
+                        "- 합격 발표: 5월 초 예정\n" +
+                        "- 직무면접: 5월 중순 예정\n" +
+                        "- 임원면접: 6월 초 예정\n" +
+                        "- 최종 발표: 6월 말 예정\n" +
+                        "\n" +
+                        "\uD83D\uDCCC 지원 가능 부문\n" +
+                        "- DX부문 (MX, VD/DA, 경영지원 등)\n" +
+                        "- DS부문 (메모리, 파운드리, S.LSI 등)\n" +
+                        "- 삼성디스플레이\n" +
+                        "- 삼성SDI / 삼성전기 / 삼성SDS (별도 공채)\n" +
+                        "\n" +
+                        "\uD83D\uDCCC 주의사항\n" +
+                        "- 계열사별로 일정 다를 수 있으니 반드시 공식 채용 홈페이지 확인\n" +
+                        "- GSAT는 온라인이 아닌 오프라인 시험장에서 진행\n" +
+                        "- 지원서는 한 번 제출하면 수정 불가 (초안 꼭 저장해두기)\n" +
+                        "\n" +
+                        "\uD83D\uDCCC 작년 대비 달라진 점\n" +
+                        "- 서류 항목 일부 간소화\n" +
+                        "- 직무 에세이 글자수 소폭 증가\n" +
+                        "\n" +
+                        "공채 준비하시는 분들 모두 화이팅입니다 \uD83D\uDD25", board, category3);
+        postRepository.save(post1);
+
+        for (int i = 16; i <= 30; i++) {
+            Post post = new Post(author2, i + "번째 게시글입니다.", "내용 " + i, board, category2);
+            postRepository.save(post);
+        }
+
+        Post post2 = new Post(author2, "취업 준비 6개월 차, 솔직한 현실 정리해봤어요",
+                "안녕하세요, 올해 2월에 졸업하고 취준 6개월 차 접어드는 26살입니다.\n" +
+                        "\n" +
+                        "요즘 너무 지쳐서 그냥 털어놓고 싶어서 올려봐요.\n" +
+                        "비슷한 상황이신 분들이랑 공감하고 싶기도 하고요.\n" +
+                        "\n" +
+                        "\uD83D\uDCCC 지금까지 한 것들\n" +
+                        "- 자격증: 정보처리기사, SQLD 취득\n" +
+                        "- 코테: 백준 골드 3 / 프로그래머스 Lv.3 일부\n" +
+                        "- 토익: 875점 (더 올릴지 고민 중)\n" +
+                        "- 지원한 곳: 대기업 4곳, 중견 3곳, 스타트업 2곳\n" +
+                        "- 현재까지 결과: 서류 4곳 탈락, 코테 2곳 탈락, 면접 1곳 탈락, 대기 2곳\n" +
+                        "\n" +
+                        "\uD83D\uDCCC 솔직한 심정\n" +
+                        "처음엔 \"6개월이면 붙겠지\" 했는데\n" +
+                        "생각보다 훨씬 길고 외로운 싸움이더라고요.\n" +
+                        "\n" +
+                        "친구들은 하나둘 붙어서 회사 다니는데\n" +
+                        "저는 아직도 카페에서 코테 풀고 있으니까요.\n" +
+                        "\n" +
+                        "근데 또 신기한 게, 포기하고 싶다가도\n" +
+                        "합격 후기 하나 읽으면 다시 하게 되더라고요.\n" +
+                        "\n" +
+                        "\uD83D\uDCCC 그래서 드리고 싶은 말\n" +
+                        "지금 저처럼 지쳐있는 분들,\n" +
+                        "우리 그냥 조금만 더 버텨봐요.\n" +
+                        "\n" +
+                        "취준은 실력만큼 타이밍이랑 운도 있다고 생각해요.\n" +
+                        "언젠간 우리 차례가 올 거라고 믿고 싶어요.\n" +
+                        "\n" +
+                        "혹시 비슷한 상황이신 분들 댓글로 이야기 나눠요 \uD83D\uDE42\n" +
+                        "같이 힘내봐요.", board, category2);
+        postRepository.save(post2);
+
+        for (int i = 31; i <= 35; i++) {
+            Post post = new Post(author2, i + "번째 게시글입니다.", "내용 " + i, board, category3);
+            postRepository.save(post);
+        }
     }
 
     @Transactional
@@ -150,12 +240,13 @@ public class BaseInitData {
             return;
         }
         // 1번 게시판에 글 3개
-        categoryService.create(1L, "카테고리 1");
-        categoryService.create(1L, "카테고리 2");
-        categoryService.create(1L, "카테고리 3");
+        categoryService.create(1L, "가입인사");
+        categoryService.create(1L, "취업준비");
+        categoryService.create(1L, "정보공유");
 
-        categoryService.create(2L, "카테고리 1");
-        categoryService.create(2L, "카테고리 2");
+
+        categoryService.create(2L, "Backend");
+        categoryService.create(2L, "Frontend");
     }
 
     @Transactional

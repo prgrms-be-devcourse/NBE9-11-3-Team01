@@ -36,6 +36,9 @@ dependencies {
 
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+	
+	// 코틀린 표준 라이브러리
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")

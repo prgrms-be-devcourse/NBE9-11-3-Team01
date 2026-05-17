@@ -22,8 +22,8 @@ data class BoardResponse(
             boardName = board.name,
             description = board.description,
             postCount = postCount,
-            createdAt = board.createdAt ?: throw IllegalStateException("createdAt is null"),
-            modifiedAt = board.modifiedAt ?: throw IllegalStateException("modifiedAt is null"),
+            createdAt = board.createdAt ?: throw IllegalStateException("Board createdAt is null"),
+            modifiedAt = board.modifiedAt ?: throw IllegalStateException("Board modifiedAt is null"),
         )
 
         @JvmStatic
