@@ -20,7 +20,6 @@ data class PostDetailResponseDto(
         val author: String,
         val profileImage: String?,
         val likeCount: Int,
-        @get:JsonProperty("isLiked")
         val liked: Boolean,
         @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         val createdAt: LocalDateTime,
@@ -38,7 +37,7 @@ data class PostDetailResponseDto(
                         category: Category,
                         comments: List<CommentReadResponseDto>,
                         isOwner: Boolean,
-                        isLiked: Boolean,
+                        liked: Boolean,
                 ): PostDetailResponseDto = PostDetailResponseDto(
                         id = post.id ?: throw IllegalStateException("Post id is null"),
                         boardId = board.id ?: throw IllegalStateException("Board id is null"),
@@ -50,7 +49,7 @@ data class PostDetailResponseDto(
                         author = post.author.nickname,
                         profileImage = post.author.profileImage,
                         likeCount = post.likeCount,
-                        liked = isLiked,
+                        liked = liked,
                         createdAt = post.createdAt ?: throw IllegalStateException("Post createdAt is null"),
                         modifiedAt = post.modifiedAt ?: throw IllegalStateException("Post modifiedAt is null"),
                         comments = comments,
@@ -64,7 +63,7 @@ data class PostDetailResponseDto(
                         category: Category,
                         comments: List<CommentReadResponseDto>,
                         isOwner: Boolean,
-                        isLiked: Boolean,
-                ): PostDetailResponseDto = of(post, board, category, comments, isOwner, isLiked)
+                        liked: Boolean,
+                ): PostDetailResponseDto = of(post, board, category, comments, isOwner, liked)
         }
 }

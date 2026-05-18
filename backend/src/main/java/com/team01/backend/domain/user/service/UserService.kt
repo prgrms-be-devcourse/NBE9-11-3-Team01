@@ -1,6 +1,6 @@
 package com.team01.backend.domain.user.service
 
-import com.team01.backend.domain.user.dto.*
+import com.team01.backend.domain.user.dto.MyPageResponseDto
 import com.team01.backend.domain.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -25,11 +25,11 @@ class UserService(
     }
 
     @Transactional(readOnly = true)
-    fun getMyPage(email: String): MyPageResponse {
+    fun getMyPage(email: String): MyPageResponseDto {
         val user = userRepository.findByEmail(email)
             .orElseThrow { EntityNotFoundException("사용자 정보를 찾을 수 없습니다: $email") }
 
-        return MyPageResponse(
+        return MyPageResponseDto(
             email = user.email,
             nickname = user.nickname,
             profileImage = user.profileImage,
@@ -41,25 +41,25 @@ class UserService(
     /**
      * 사용자 정보 업데이트
      */
-    fun updateUserInfo(email: String, request: UserUpdateInfoRequest) {
+    fun updateUserInfo(email: String, nickname: String, newPassword: String?) {
         val user = userRepository.findByEmail(email)
             .orElseThrow { EntityNotFoundException("사용자 없음") }
 
-        val finalPassword = request.newPassword
-            ?.takeIf { newPassword -> newPassword.isNotBlank() }
-            ?.let { newPassword -> passwordEncoder.encode(newPassword) }
+        val finalPassword = newPassword
+            ?.takeIf { password -> password.isNotBlank() }
+            ?.let { password -> passwordEncoder.encode(password) }
             ?: user.password
 
-        user.updateInfo(request.nickname, finalPassword)
+        user.updateInfo(nickname, finalPassword)
     }
 
     /**
      * 프로필 이미지 업데이트
      */
-    fun updateProfileImage(email: String, request: UserProfileImageRequest) {
+    fun updateProfileImage(email: String, profileImage: String?) {
         val user = userRepository.findByEmail(email)
             .orElseThrow { EntityNotFoundException("사용자 없음") }
-        
-        user.updateProfileImage(request.profileImage ?: user.profileImage)
+
+        user.updateProfileImage(profileImage ?: user.profileImage)
     }
 }

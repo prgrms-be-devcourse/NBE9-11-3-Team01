@@ -17,6 +17,11 @@ import org.springframework.transaction.annotation.Transactional
  * 조치 완료: F1(관리자 가입 로직 삭제, 로그 노출 차단), F2(비밀번호 정책 통일)
  * 보안 조치: 일반 가입 API를 통한 관리자 생성 경로를 완전히 차단했습니다.
  */
+data class AuthToken(
+    val accessToken: String,
+    val refreshToken: String
+)
+
 @Service
 @Transactional
 class AuthService(
@@ -28,10 +33,10 @@ class AuthService(
     /**
      * 회원가입: 일반 가입 API를 통하는 모든 사용자는 Role.USER로 고정됩니다. (F1 대응)
      */
-    fun signUp(request: SignUpRequest) {
-        val safeEmail = request.email
-        val safePassword = request.password
-        val safeNickname = request.nickname
+    fun signUp(email: String, password: String, nickname: String) {
+        val safeEmail = email
+        val safePassword = password
+        val safeNickname = nickname
 
         if (userRepository.existsByEmail(safeEmail)) {
             throw IllegalArgumentException("이미 사용 중인 이메일입니다.")
@@ -50,9 +55,9 @@ class AuthService(
     /**
      * 로그인: 토큰 세트 발급 및 DB 리프레시 토큰 각인
      */
-    fun login(request: LoginRequest): TokenDto {
-        val safeEmail = request.email
-        val safePassword = request.password
+    fun login(email: String, password: String): AuthToken {
+        val safeEmail = email
+        val safePassword = password
 
         val user = userRepository.findByEmail(safeEmail)
             .orElseThrow { BadCredentialsException("이메일 또는 비밀번호가 일치하지 않습니다.") }
@@ -68,8 +73,8 @@ class AuthService(
 
         // DB에 최신 리프레시 토큰 저장
         user.updateRefreshToken(refreshToken)
-        
-        return TokenDto(accessToken, refreshToken)
+
+        return AuthToken(accessToken, refreshToken)
     }
 
     /**
@@ -100,9 +105,9 @@ class AuthService(
      * [추가] 비밀번호 재설정: 비밀번호를 분실한 사용자를 위한 구제 로직
      */
     @Transactional
-    fun resetPassword(request: PasswordResetRequest) {
-        val safeEmail = request.email
-        val safeNewPassword = request.newPassword
+    fun resetPassword(email: String, newPassword: String) {
+        val safeEmail = email
+        val safeNewPassword = newPassword
 
         val user = userRepository.findByEmail(safeEmail)
             .orElseThrow { EntityNotFoundException("해당 이메일의 사용자를 찾을 수 없습니다.") }
@@ -124,8 +129,8 @@ class AuthService(
      * [복구] 아이디(이메일) 찾기
      */
     @Transactional(readOnly = true)
-    fun findId(request: FindIdRequest): String {
-        val safeNickname = request.nickname
+    fun findId(nickname: String): String {
+        val safeNickname = nickname
         val user = userRepository.findByNicknameAndRoleNot(safeNickname, Role.WITHDRAWN)
             .orElseThrow { EntityNotFoundException("해당 닉네임으로 등록된 이메일이 없습니다.") }
             

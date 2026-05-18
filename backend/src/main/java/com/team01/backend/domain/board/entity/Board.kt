@@ -29,6 +29,4 @@ class Board(name: String, description: String) : BaseEntity() {
     fun delete() {
         this.deleted = true
     }
-    fun isDeleted(): Boolean = deleted
-
 }

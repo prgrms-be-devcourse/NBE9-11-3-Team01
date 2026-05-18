@@ -10,7 +10,6 @@ import com.team01.backend.domain.post.entity.PostLike
 import com.team01.backend.domain.post.repository.PostLikeRepository
 import com.team01.backend.domain.post.repository.PostRepository
 import com.team01.backend.domain.post.service.PostService
-import com.team01.backend.domain.user.dto.SignUpRequest
 import com.team01.backend.domain.user.entity.User
 import com.team01.backend.domain.user.repository.UserRepository
 import com.team01.backend.domain.user.service.AuthService
@@ -50,27 +49,21 @@ class BaseInitData(
         if (userRepository.count() > 0) return
 
         authService.signUp(
-            SignUpRequest(
-                email = "user1@test.com",
-                password = "password1234",
-                nickname = "유저1",
-            ),
+            email = "user1@test.com",
+            password = "password1234",
+            nickname = "유저1",
         )
         authService.signUp(
-            SignUpRequest(
-                email = "user2@test.com",
-                password = "password1234",
-                nickname = "유저2",
-            ),
+            email = "user2@test.com",
+            password = "password1234",
+            nickname = "유저2",
         )
 
         for (i in 3..40) {
             authService.signUp(
-                SignUpRequest(
-                    email = "user$i@test.com",
-                    password = "password1234",
-                    nickname = "테스트유저$i",
-                ),
+                email = "user$i@test.com",
+                password = "password1234",
+                nickname = "테스트유저$i",
             )
         }
     }
