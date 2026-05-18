@@ -16,6 +16,7 @@ import com.team01.backend.domain.user.entity.User
 import com.team01.backend.domain.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -35,16 +36,16 @@ class CommentService(
     // 초기 데이터용
     @Transactional
     fun writeInitComment(postId: Long, tempUser: User, content: String, parentId: Long?) {
-        val post = postRepository.findById(postId)
-            .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
-        if (post.isDeleted()) {
+        val post = postRepository.findByIdOrNull(postId)
+            ?: throw EntityNotFoundException("게시글을 찾을 수 없습니다.")
+        if (post.deleted) {
             throw EntityNotFoundException("게시글을 찾을 수 없습니다.")
         }
 
         // parentId 있으면 부모 댓글 찾기, 없으면 null
         val parent = parentId?.let { id ->
-            commentRepository.findById(id)
-                .orElseThrow { EntityNotFoundException("부모 댓글을 찾을 수 없습니다.") }
+            commentRepository.findByIdOrNull(id)
+                ?: throw EntityNotFoundException("부모 댓글을 찾을 수 없습니다.")
         }
 
         commentRepository.save(Comment(post, tempUser, content, parent))
@@ -100,29 +101,19 @@ class CommentService(
             .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
 
         // 삭제된 게시글 확인 -> code:400
-        if (post.isDeleted()) {
+        if (post.deleted) {
             throw IllegalArgumentException("삭제된 게시글에는 댓글을 달 수 없습니다.")
         }
 
         // 대댓글인지 확인 부모 댓글 없을 시 예외처리 -> code : 404
-        var parent: Comment? = null
-        if (reqDto.parentId != null) {
-            parent = commentRepository.findById(reqDto.parentId)
+        val parent: Comment? = reqDto.parentId?.let { id ->
+            commentRepository.findById(id)
                 .orElseThrow { EntityNotFoundException("부모 댓글을 찾을 수 없습니다.") }
-
-            // 부모 댓글은 같은 게시글에 속해야 함
-            if (parent.post.id != postId) {
-                throw IllegalArgumentException("잘못된 게시글의 댓글입니다.")
-            }
-
-            if (parent.deleted) {
-                throw IllegalArgumentException("삭제된 댓글에는 답글을 달 수 없습니다.")
-            }
-
-            // 답글의 대댓글 방지
-            if (parent.parent != null) {
-                throw IllegalArgumentException("답글에는 답글을 달 수 없습니다.")
-            }
+                .also {
+                    if (it.post.id != postId) throw IllegalArgumentException("잘못된 게시글의 댓글입니다.")
+                    if (it.deleted) throw IllegalArgumentException("삭제된 댓글에는 답글을 달 수 없습니다.")
+                    if (it.parent != null) throw IllegalArgumentException("답글에는 답글을 달 수 없습니다.")
+                }
         }
 
         val comment = Comment(post, user, reqDto.content, parent)
@@ -130,17 +121,15 @@ class CommentService(
 
         // 댓글 달림 이벤트 발행
         val maxLength = 10 // 알림에서 보여줄 내용 글자수 제한
-        val contentLimit = comment.content.let { text ->
-            if (text.length > maxLength) text.substring(0, maxLength) + "..." else text
-        }
+        val contentLimit = comment.content.let { if (it.length > maxLength) it.take(maxLength) + "..." else it }
 
         if (post.author.id != user.id) { // 자기 글에 댓글 작성한 경우에는 발행하지 X
             eventPublisher.publishEvent(
                 CommentCreatedEvent(
                     postId,
-                    post.author.id!!,
+                    post.author.id,
                     comment.id,
-                    user.id!!,
+                    user.id,
                     contentLimit,
                 ),
             )
@@ -152,9 +141,9 @@ class CommentService(
                 ReplyCreatedEvent(
                     postId,
                     parent.id,
-                    parent.user.id!!,
+                    parent.user.id,
                     comment.id,
-                    user.id!!,
+                    user.id,
                     contentLimit,
                 ),
             )
@@ -168,17 +157,11 @@ class CommentService(
         val user = findUser(email)
 
         // 댓글 존재 확인 -> code:404
-        val comment = commentRepository.findById(commentId)
-            .orElseThrow { EntityNotFoundException("댓글을 찾을 수 없습니다.") }
+        val comment = commentRepository.findByIdOrNull(commentId)
+            ?: throw EntityNotFoundException("댓글을 찾을 수 없습니다.")
 
-        // 삭제된 댓글을 수정할 수 없음.
-        if (comment.deleted) {
-            throw IllegalArgumentException("삭제된 댓글은 수정할 수 없습니다.")
-        }
-
-        if (comment.user.id != user.id) {
-            throw IllegalArgumentException("본인 댓글만 수정할 수 있습니다.")
-        }
+        if (comment.deleted) throw IllegalArgumentException("삭제된 댓글은 수정할 수 없습니다.")
+        if (comment.user.id != user.id) throw IllegalArgumentException("본인 댓글만 수정할 수 있습니다.")
 
         comment.update(reqDto.content)
         return CommentResponseDto.of(comment)
@@ -195,20 +178,13 @@ class CommentService(
     fun deleteComment(commentId: Long, email: String): CommentDeleteResponseDto {
         val loginUser = findUser(email)
 
-        val comment = commentRepository.findByIdWithPost(commentId)
-            .orElseThrow { EntityNotFoundException("댓글을 찾을 수 없습니다.") }
+        val comment = commentRepository.findByIdWithPost(commentId) ?: throw EntityNotFoundException("댓글을 찾을 수 없습니다.")
 
-        if (comment.deleted) {
-            throw IllegalArgumentException("이미 삭제된 댓글입니다.")
-        }
+        if (comment.deleted) throw IllegalArgumentException("이미 삭제된 댓글입니다.")
 
-        if (comment.post.isDeleted()) {
-            throw EntityNotFoundException("게시글을 찾을 수 없습니다.")
-        }
+        if (comment.post.deleted) throw EntityNotFoundException("게시글을 찾을 수 없습니다.")
 
-        if (comment.user.id != loginUser.id) {
-            throw AccessDeniedException("본인 댓글만 삭제할 수 있습니다.")
-        }
+        if (comment.user.id != loginUser.id) throw AccessDeniedException("본인 댓글만 삭제할 수 있습니다.")
 
         comment.softDelete()
         commentRepository.saveAndFlush(comment)
@@ -226,16 +202,16 @@ class CommentService(
         val user = findUser(email)
 
         val comment = commentLikeRepository.findCommentByIdAndPostForUpdate(commentId)
-            .orElseThrow { EntityNotFoundException("댓글을 찾을 수 없습니다.") }
+            ?: throw  EntityNotFoundException("댓글을 찾을 수 없습니다.")
 
         if (comment.deleted) {
             throw IllegalArgumentException("삭제된 댓글에는 좋아요를 할 수 없습니다.")
         }
-        if (comment.post.isDeleted()) {
+        if (comment.post.deleted) {
             throw EntityNotFoundException("게시글을 찾을 수 없습니다.")
         }
 
-        val removed = commentLikeRepository.deleteByComment_IdAndUser_Id(commentId, user.id!!)
+        val removed = commentLikeRepository.deleteByComment_IdAndUser_Id(commentId, user.id)
         if (removed > 0) {
             comment.decrementLikeCount()
             return CommentLikeToggleResponseDto(commentId, comment.likeCount, false)
