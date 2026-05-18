@@ -24,6 +24,9 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
+import org.springframework.security.access.AccessDeniedException
+
 
 
 @Service
@@ -51,6 +54,7 @@ class PostService(
         }
 
         val board: Board = post.board
+
         if (board.deleted) {
             throw EntityNotFoundException("존재하지 않는 게시판입니다.")
         }
@@ -79,8 +83,7 @@ class PostService(
             .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
 
         // 게시판, 카테고리 조회
-        // TODO: Board 엔티티 리팩토링(isDeleted -> deleted) 완료 후 findByIdAndDeletedFalse로 변경할 것
-        val board = boardRepository.findByIdAndIsDeletedFalse(boardId)
+        val board = boardRepository.findByIdAndDeletedFalse(boardId)
             ?: throw EntityNotFoundException("존재하지 않는 게시판입니다.")
 
         // 검증 메서드 실행 (여기서 실제 DB 조회 / 게시판-카테고리 소속 검증 완료)
@@ -155,11 +158,14 @@ class PostService(
         categoryId: Long
     ): Post {
         // 게시글 및 요청자(actor) 조회
-        val post = postRepository.findById(postId)
-            .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
+        val post = postRepository.findByIdOrNull(postId)
+            ?: throw EntityNotFoundException("게시글을 찾을 수 없습니다.")
 
         val actor = userRepository.findByEmail(email)
+        //TODO UserRepository.findByEmail optional 제거 되면 .orElseThrow 지우고, 아래 주석 코드로 변경
+        // ?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
             .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
+
 
         // 작성자 권한 검증 (컨벤션 8번)
         if (post.author.id != actor.id) {
@@ -167,8 +173,8 @@ class PostService(
         }
 
         // 변경할 카테고리 조회 및 게시판 소속 검증
-        val category = categoryRepository.findById(categoryId)
-            .orElseThrow { EntityNotFoundException("카테고리를 찾을 수 없습니다.") }
+        val category = categoryRepository.findByIdOrNull(categoryId)
+            ?: throw EntityNotFoundException("카테고리를 찾을 수 없습니다.")
 
         if (category.boardId != post.board.id) {
             throw IllegalArgumentException("해당 게시판에서 사용할 수 없는 카테고리입니다.")
@@ -179,14 +185,17 @@ class PostService(
         return post
     }
 
+
     @Transactional
     fun delete(postId: Long, email: String) {
         // 게시글 조회
-        val post = postRepository.findById(postId)
-            .orElseThrow { EntityNotFoundException("해당 게시물을 찾을 수 없습니다.") }
+        val post = postRepository.findByIdOrNull(postId)
+            ?: throw EntityNotFoundException("해당 게시물을 찾을 수 없습니다.")
 
         // 요청 유저(actor) 조회
         val actor = userRepository.findByEmail(email)
+        //TODO UserRepository.findByEmail optional 제거 되면 .orElseThrow 지우고, 아래 주석 코드로 변경
+        //?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
             .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
 
         // 삭제 여부 확인 (컨벤션 2번: isDeleted 대신 deleted 프로퍼티 사용)
@@ -208,6 +217,7 @@ class PostService(
         evictTop5Cache(targetBoardId)
     }
 
+
     fun getPostsByBoardAndCategory(
         boardId: Long,
         categoryId: Long,
@@ -226,7 +236,7 @@ class PostService(
     fun getTop5Posts(boardId: Long): List<PostResponseDto> {
         val cacheKey = "top5:board:$boardId"
 
-        // 1. 캐시 조회 (엘비스 연산자 대신 let과 try-catch 활용)
+        // 캐시 조회
         val cachedJson = redisTemplate.opsForValue().get(cacheKey)
 
         try {
@@ -234,11 +244,11 @@ class PostService(
                 return objectMapper.readValue(it, object : TypeReference<List<PostResponseDto>>() {})
             }
 
-            // 2. 캐시 부재 시 DB 조회 및 응답 변환
+            // 캐시 부재 시 DB 조회 및 응답 변환
             val posts = postRepository.findTop5ByBoardId(boardId, PageRequest.of(0, 5))
             val response = posts.map { PostResponseDto.of(it) }
 
-            // 3. Redis 저장 (JSON 직렬화)
+            // Redis 저장
             val json = objectMapper.writeValueAsString(response)
             redisTemplate.opsForValue().set(cacheKey, json, Duration.ofMinutes(10))
 
@@ -251,6 +261,7 @@ class PostService(
                 .map { PostResponseDto.of(it) }
         }
     }
+
 
     // redis 캐시 삭제 (글 등록, 글 삭제, likeCount 변경 메서드에서 사용됨)
     private fun evictTop5Cache(boardId: Long) {
