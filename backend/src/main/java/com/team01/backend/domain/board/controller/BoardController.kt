@@ -24,12 +24,12 @@ class BoardController(
     @Operation(summary = "게시판 목록 조회", description = "게시판별 게시글 수 포함")
     @GetMapping
     fun getAllBoards(): ResponseEntity<ApiResponse<List<BoardResponseDto>>> =
-        ResponseEntity.ok(ApiResponse.ofSuccess(ArrayList(boardService.getAllBoards())))
+        ResponseEntity.ok(ApiResponse.ofSuccess(boardService.getAllBoards()))
 
     // 게시판별 카테고리 목록 조회 (비로그인 허용, 글쓰기 페이지 카테고리 선택용)
     @GetMapping("/{boardId}/categories")
     fun getCategoriesByBoard(
         @PathVariable boardId: Long,
     ): ResponseEntity<ApiResponse<List<CategoryResponseDto>>> =
-        ResponseEntity.ok(ApiResponse.ofSuccess(ArrayList(categoryService.listByBoardId(boardId))))
+        ResponseEntity.ok(ApiResponse.ofSuccess(categoryService.listByBoardId(boardId)))
 }
