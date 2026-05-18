@@ -52,8 +52,11 @@ class CategoryService(
     }
 
     // 게시판별 카테고리 목록 조회 (글쓰기 페이지 카테고리 드롭다운용)
-    fun listByBoardId(boardId: Long): List<CategoryResponseDto>{
-        return categoryRepository.findByBoardId(boardId)
+    fun listByBoardId(boardId: Long): List<CategoryResponseDto> {
+        boardService.existsById(boardId).also { exists ->
+            if (!exists) throw EntityNotFoundException("존재하지 않는 게시판입니다.")
+        }
+        return categoryRepository.findByBoardIdAndBoardDeletedFalse(boardId)
             .map(CategoryResponseDto::from)
     }
 }

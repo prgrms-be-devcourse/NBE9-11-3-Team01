@@ -15,7 +15,7 @@ interface PostLikeRepository : JpaRepository<PostLike, Long> {
 
     @Modifying
     @Query("DELETE FROM PostLike pl WHERE pl.user.id = :userId AND pl.post.id = :postId")
-    fun deleteByUserIdAndPostId(@Param("userId") userId: Long, @Param("postId") postId: Long): Int
+    fun deleteByUserIdAndPostId(@Param("userId") userId: Long?, @Param("postId") postId: Long): Int
 
     @Modifying
     @Query(
@@ -25,7 +25,7 @@ interface PostLikeRepository : JpaRepository<PostLike, Long> {
                 "(SELECT 1 FROM POST_LIKES WHERE USER_ID = :userId AND POST_ID = :postId)",
         nativeQuery = true
     )
-    fun tryInsert(@Param("userId") userId: Long, @Param("postId") postId: Long): Int
+    fun tryInsert(@Param("userId") userId: Long?, @Param("postId") postId: Long): Int
 
     fun findByPostId(postId: Long): List<PostLike>
 }

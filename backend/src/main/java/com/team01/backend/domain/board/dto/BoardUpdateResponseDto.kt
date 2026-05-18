@@ -8,9 +8,9 @@ data class BoardUpdateResponseDto(
     val id: Long,
     val name: String,
     val description: String,
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     val createdAt: LocalDateTime,
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     val modifiedAt: LocalDateTime
 ) {
     constructor(board: Board) : this(
@@ -20,4 +20,15 @@ data class BoardUpdateResponseDto(
         board.createdAt,
         board.modifiedAt
     )
+    companion object {
+        @JvmStatic
+        fun from(board: Board): BoardUpdateResponseDto =
+            BoardUpdateResponseDto(
+                id = board.id,
+                name = board.name,
+                description = board.description,
+                createdAt = board.createdAt,
+                modifiedAt = board.modifiedAt,
+            )
+    }
 }
