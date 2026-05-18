@@ -22,11 +22,9 @@ class CommentController(
 ) {
 
     // 로그인 검증 — PostController와 동일하게 컨트롤러에서 처리
-    private fun validateLogin(userDetails: UserDetails?) {
-        if (userDetails == null) {
-            throw IllegalArgumentException("로그인이 필요한 서비스입니다.")
-        }
-    }
+    private fun validateLogin(userDetails: UserDetails?): String =
+        userDetails?.username
+            ?: throw IllegalArgumentException("로그인이 필요한 서비스입니다.")
 
     // COMMENT-02 댓글(답글) 조회
     @Operation(summary = "댓글 조회", description = "특정 게시글의 댓글/대댓글 목록을 조회합니다. 로그인한 사용자만 가능합니다.")
@@ -35,8 +33,8 @@ class CommentController(
         @PathVariable postId: Long,
         @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<List<CommentReadResponseDto>>> {
-        validateLogin(userDetails)
-        val list = commentService.getCommentsByPostId(postId, userDetails!!.username)
+        val email = validateLogin(userDetails)
+        val list = commentService.getCommentsByPostId(postId, email)
         return ResponseEntity.ok(ApiResponse.ofSuccess(list))
     }
 
@@ -47,8 +45,8 @@ class CommentController(
         @Valid @RequestBody reqDto: CommentRequestDto,
         @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<CommentResponseDto>> {
-        validateLogin(userDetails)
-        val resDto = commentService.writeComment(postId, reqDto, userDetails!!.username)
+        val email = validateLogin(userDetails)
+        val resDto = commentService.writeComment(postId, reqDto, email)
         return ResponseEntity.ok(ApiResponse.ofSuccess(resDto))
     }
 
@@ -59,8 +57,8 @@ class CommentController(
         @Valid @RequestBody requestDto: CommentRequestDto,
         @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<CommentResponseDto>> {
-        validateLogin(userDetails)
-        val resDto = commentService.updateComment(commentId, requestDto, userDetails!!.username)
+        val email = validateLogin(userDetails)
+        val resDto = commentService.updateComment(commentId, requestDto, email)
         return ResponseEntity.ok(ApiResponse.ofSuccess(resDto))
     }
 
@@ -71,8 +69,8 @@ class CommentController(
         @PathVariable commentId: Long,
         @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<CommentLikeToggleResponseDto>> {
-        validateLogin(userDetails)
-        val dto = commentService.toggleCommentLike(commentId, userDetails!!.username)
+        val email = validateLogin(userDetails)
+        val dto = commentService.toggleCommentLike(commentId, email)
         return ResponseEntity.ok(ApiResponse.ofSuccess(dto))
     }
 
@@ -83,8 +81,8 @@ class CommentController(
         @PathVariable commentId: Long,
         @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<CommentDeleteResponseDto>> {
-        validateLogin(userDetails)
-        val body = commentService.deleteComment(commentId, userDetails!!.username)
+        val email = validateLogin(userDetails)
+        val body = commentService.deleteComment(commentId, email)
         return ResponseEntity.ok(ApiResponse.ofSuccess(body))
     }
 }
