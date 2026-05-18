@@ -79,6 +79,9 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 }
 
 kotlin {
