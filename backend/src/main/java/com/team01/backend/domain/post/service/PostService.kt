@@ -20,11 +20,9 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.security.access.AccessDeniedException
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Duration
-import java.util.Optional
 
 
 @Service
@@ -52,15 +50,15 @@ class PostService(
         }
 
         val board: Board = post.board
-        if (board.isDeleted) {
+        if (board.deleted) {
             throw EntityNotFoundException("존재하지 않는 게시판입니다.")
         }
     }
 
     // 카테고리가 해당 게시판 소속인지 검증
     private fun validateCategoryInBoard(categoryId: Long, boardId: Long) {
-        val category = categoryRepository.findById(categoryId)
-            .orElseThrow { EntityNotFoundException("카테고리를 찾을 수 없습니다.") }
+        val category = categoryRepository.findByIdOrNull(categoryId)
+            ?: throw EntityNotFoundException("카테고리를 찾을 수 없습니다.")
 
         if (category.boardId != boardId) {
             throw IllegalArgumentException("해당 게시판에서 사용할 수 없는 카테고리입니다.")
@@ -106,26 +104,26 @@ class PostService(
     }
 
     // 게시글 상세 조회 (비로그인 사용자는 Controller에서 차단, 작성자 여부 포함)
-    fun getPostById(postId: Long, email: String?): PostDetailResponseDto {
+    fun getPostById(postId: Long, email: String): PostDetailResponseDto {
         val post = postRepository.findWithDetailsById(postId)
-            .orElseThrow { EntityNotFoundException("존재하지 않는 게시글입니다.") }
+            ?: throw EntityNotFoundException("존재하지 않는 게시글입니다.")
 
         validatePost(post)
 
-        val currentUser = email
-            ?.let { userRepository.findByEmail(it).orElse(null) }
+        val currentUser = userRepository.findByEmail(email)
+            ?.let { if (it.isPresent) it.get() else null }
         val isOwner = currentUser != null && post.author.id == currentUser.id
-        val isLiked = currentUser != null &&
+        val liked = currentUser != null &&
                 postLikeRepository.findByUserIdAndPostId(
                     currentUser.id ?: throw IllegalStateException("사용자 ID가 없습니다."),
                     postId
                 ) != null
         val comments = commentService.getCommentsByPostId(postId, currentUser?.email)
 
-        return PostDetailResponseDto.of(post, post.board, post.category, comments, isOwner, isLiked)
+        return PostDetailResponseDto.of(post, post.board, post.category, comments, isOwner, liked)
     }
 
-    fun findById(id: Long): Optional<Post> = postRepository.findById(id)
+    fun findById(id: Long): Post? = postRepository.findByIdOrNull(id)
 
     /*@Transactional
     public Post modify(Long postId, String email, String title, String content, Long categoryId) {

@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(
     indexes = [
-        Index(// 게시판별 게시글 목록 조회 최적화 (board_id + isDeleted 필터링, createdAt 정렬)
+        Index(// 게시판별 게시글 목록 조회 최적화 (board_id + deleted 필터링, createdAt 정렬)
             name = "idx_post_board_deleted_created",
             columnList = "board_id, isDeleted, createdAt",
         ),
@@ -73,8 +73,6 @@ class Post : BaseEntity {
     fun delete() {
         this.deleted = true
     }
-
-    fun isDeleted(): Boolean = deleted
 
     // top5 조회를 위한 임시 메서드
     fun initLikeCount(likeCount: Int) {

@@ -29,7 +29,7 @@ class BoardService(
         return BoardCreateResponseDto(board)
     }
     // 게시판 목록 조회
-    fun getAllBoards(): List<BoardResponse> {
+    fun getAllBoards(): List<BoardResponseDto> {
         val boards: List<Board> = boardRepository.findAllByDeletedFalse()
 
         // 게시판별 게시글 수 한 번에 조회 (N+1 방지)
@@ -39,7 +39,7 @@ class BoardService(
         return boards
             .map {
                     board: Board ->
-                BoardResponse.from(
+                BoardResponseDto.from(
                     board,
                     postCountMap[board.id] ?:0L
                 )

@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.util.Optional
 
 interface PostRepository : JpaRepository<Post, Long>, PostRepositoryCustom {
 
@@ -26,7 +25,7 @@ interface PostRepository : JpaRepository<Post, Long>, PostRepositoryCustom {
 
     // 게시글 상세 조회 - board, category, author 한 번에 조회 (N+1 방지)
     @EntityGraph(attributePaths = ["board", "category", "author"])
-    fun findWithDetailsById(id: Long): Optional<Post>
+    fun findWithDetailsById(id: Long): Post?
 
     // 게시판별 게시글 수 조회 (삭제된 게시글 제외)
     fun countByBoardIdAndDeletedFalse(boardId: Long): Long
