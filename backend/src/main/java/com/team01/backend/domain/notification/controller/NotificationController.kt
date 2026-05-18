@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "알림", description = "댓글/답글 알림 관련 API")
 @RestController
-// @RequiredArgsConstructor 제거 및 생성자 주입 통일
 class NotificationController(
     private val notificationService: NotificationService
 ) {

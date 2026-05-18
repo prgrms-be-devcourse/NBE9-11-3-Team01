@@ -2,12 +2,8 @@ package com.team01.backend.domain.notification.entity
 
 import com.team01.backend.global.entity.BaseEntity
 import jakarta.persistence.Entity
-import lombok.Getter
-import lombok.NoArgsConstructor
 
 @Entity
-@Getter
-@NoArgsConstructor
 class Notification(receiverId: Long, senderId: Long, targetId: Long, content: String) : BaseEntity() {
     var receiverId = receiverId
         protected set
