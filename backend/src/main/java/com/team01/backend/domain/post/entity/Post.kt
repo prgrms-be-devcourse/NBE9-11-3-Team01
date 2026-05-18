@@ -74,8 +74,6 @@ class Post : BaseEntity {
         this.deleted = true
     }
 
-    fun isDeleted(): Boolean = deleted
-
     // top5 조회를 위한 임시 메서드
     fun initLikeCount(likeCount: Int) {
         this.likeCount = likeCount
