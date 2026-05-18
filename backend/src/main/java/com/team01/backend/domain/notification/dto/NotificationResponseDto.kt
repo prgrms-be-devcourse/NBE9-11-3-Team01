@@ -9,7 +9,7 @@ data class NotificationResponseDto(
     val senderId: Long,  //보내는 사람 (userId)
     val targetId: Long,  //url
     val content: String,  // 알림 내용
-    val isRead: Boolean,
+    val alreadyRead: Boolean,
     val createdAt: LocalDateTime
 ) {
     companion object {
@@ -21,7 +21,7 @@ data class NotificationResponseDto(
                 senderId = notification.senderId,
                 targetId = notification.targetId,
                 content = notification.content,
-                isRead = notification.alreadyRead,
+                alreadyRead = notification.alreadyRead,
                 createdAt = notification.createdAt,
             )
     }
