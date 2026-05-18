@@ -2,11 +2,13 @@ package com.team01.backend.global.error;
 
 
 import com.team01.backend.global.response.ApiResponse;
+import com.team01.backend.global.security.TokenReissueException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -53,6 +55,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.ofFailure("NOT_FOUND", "요청하신 데이터를 찾을 수 없습니다."));
     }
+
+    @ExceptionHandler(TokenReissueException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTokenReissue(TokenReissueException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(
+                        ApiResponse.ofFailure(
+                                ex.getErrorCode(),
+                                Objects.requireNonNullElse(
+                                        ex.getMessage(), "인증 정보가 유효하지 않습니다.")));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthentication(AuthenticationException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(
+                        ApiResponse.ofFailure(
+                                "UNAUTHORIZED",
+                                Objects.requireNonNullElse(
+                                        ex.getMessage(), "인증 정보가 유효하지 않습니다.")));
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {

@@ -9,22 +9,26 @@ import lombok.Getter
 @Entity
 @Getter
 @Table(name = "boards")
-class Board : BaseEntity {
-    @Column(nullable = false, length = 50)
-    var name: String=""
+class Board(name: String, description: String) : BaseEntity() {
+    @field:Column(nullable = false, length = 50)
+    var name: String = name
+    protected set
 
-    @Column(length = 200)
-    var description: String=""
+    @field:Column(length = 200)
+    var description: String = description
+    protected set
 
-    var isDeleted: Boolean = false
-
-    constructor(name: String, description: String){
-        this.name = name
-        this.description = description
-    }
+    @field:Column(name = "isDeleted")
+    var deleted: Boolean = false
+    protected set
 
     fun update(name: String, description: String) { // 게시판 수정
         this.name = name
         this.description = description
     }
+    fun delete() {
+        this.deleted = true
+    }
+    fun isDeleted(): Boolean = deleted
+
 }

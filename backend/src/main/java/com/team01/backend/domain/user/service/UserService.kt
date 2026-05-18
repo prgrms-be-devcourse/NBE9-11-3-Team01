@@ -20,14 +20,14 @@ class UserService(
     @Transactional(readOnly = true)
     fun findIdByUsername(username: String): Long {
         return userRepository.findByEmail(username)
-            .map { it.id }
-            .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다: $username") }!!
+            .map { user -> user.id ?: throw IllegalStateException("사용자 ID가 없습니다: $username") }
+            .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다: $username") }
     }
 
     @Transactional(readOnly = true)
     fun getMyPage(email: String): MyPageResponse {
         val user = userRepository.findByEmail(email)
-            .orElseThrow { EntityNotFoundException("사용자 정보를 찾을 수 없습니다: $email") }!!
+            .orElseThrow { EntityNotFoundException("사용자 정보를 찾을 수 없습니다: $email") }
 
         return MyPageResponse(
             email = user.email,
@@ -43,20 +43,14 @@ class UserService(
      */
     fun updateUserInfo(email: String, request: UserUpdateInfoRequest) {
         val user = userRepository.findByEmail(email)
-            .orElseThrow { EntityNotFoundException("사용자 없음") }!!
+            .orElseThrow { EntityNotFoundException("사용자 없음") }
 
-        // 널 가능성을 완전히 배제하기 위해 명시적 타입 지정 후 할당
-        val safeNewPassword: String? = request.newPassword
-        val finalPassword: String = if (!safeNewPassword.isNullOrBlank()) {
-            passwordEncoder.encode(safeNewPassword)!!
-        } else {
-            user.password
-        }
+        val finalPassword = request.newPassword
+            ?.takeIf { newPassword -> newPassword.isNotBlank() }
+            ?.let { newPassword -> passwordEncoder.encode(newPassword) }
+            ?: user.password
 
-        // 닉네임을 명시적 String 변수에 담아 전달하여 타입 안정성 확보
-        val finalNickname: String = request.nickname ?: user.nickname
-
-        user.updateInfo(finalNickname, finalPassword)
+        user.updateInfo(request.nickname, finalPassword)
     }
 
     /**
@@ -64,7 +58,7 @@ class UserService(
      */
     fun updateProfileImage(email: String, request: UserProfileImageRequest) {
         val user = userRepository.findByEmail(email)
-            .orElseThrow { EntityNotFoundException("사용자 없음") }!!
+            .orElseThrow { EntityNotFoundException("사용자 없음") }
         
         user.updateProfileImage(request.profileImage ?: user.profileImage)
     }

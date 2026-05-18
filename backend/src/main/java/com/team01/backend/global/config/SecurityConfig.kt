@@ -1,6 +1,7 @@
 package com.team01.backend.global.config
 
 import com.team01.backend.global.security.*
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -12,7 +13,6 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
-import java.util.List
 
 /**
  * [과제] Spring Security의 전반적인 보안 정책을 설정하는 클래스입니다.
@@ -20,6 +20,7 @@ import java.util.List
  */
 @Configuration
 @EnableWebSecurity
+@EnableConfigurationProperties(JwtProperties::class)
 class SecurityConfig(
     private val jwtTokenProvider: JwtTokenProvider,
     private val accessDeniedHandler: CustomAccessDeniedHandler,
@@ -33,18 +34,19 @@ class SecurityConfig(
             // 1. CSRF 및 CORS 설정
             .csrf { it.disable() } 
             .cors { it.configurationSource(corsConfigurationSource()) }
-            
-            // 2. [F1 조치] 하이브리드 인증을 위한 세션 정책 수정
-            // 기존 STATELESS에서 IF_REQUIRED로 변경하여 필요 시 서버 세션을 활용합니다.
-            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) }
+
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             
             // 3. 인가(Authorization) 범위 설정
             .authorizeHttpRequests { auth -> auth
-                .requestMatchers("/auth/**").permitAll()      // 로그인, 회원가입 등 인증 API
-                .requestMatchers("/static/images/**").permitAll() // 프로필 이미지 보급로
-                .requestMatchers("/h2-console/**").permitAll()   // DB 콘솔
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // API 문서
-                .anyRequest().authenticated()                 // 그 외 모든 요청은 인증 필수
+                .requestMatchers("/auth/logout", "/auth/withdraw").authenticated()
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/boards/**").permitAll()
+                .requestMatchers("/static/images/**").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .anyRequest().authenticated()
             }
             
             // 4. 보안 헤더 및 필터 배치
@@ -72,7 +74,7 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): UrlBasedCorsConfigurationSource {
         val configuration = CorsConfiguration().apply {
-            allowedOrigins = listOf("http://localhost:3000", "https://cdpn.io")
+            allowedOrigins = listOf("http://localhost:3000")
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
             allowedHeaders = listOf("*")
             allowCredentials = true
