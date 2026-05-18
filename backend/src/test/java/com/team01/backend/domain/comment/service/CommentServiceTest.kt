@@ -1,6 +1,6 @@
 package com.team01.backend.domain.comment.service
 
-import com.team01.backend.config.TestMailConfig
+//import com.team01.backend.config.TestMailConfig
 import com.team01.backend.config.TestRedisConfig
 import com.team01.backend.domain.comment.dto.CommentDeleteResponseDto
 import com.team01.backend.domain.comment.dto.CommentRequestDto
@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Import(TestMailConfig::class, TestRedisConfig::class)
+//@Import(TestMailConfig::class, TestRedisConfig::class)
 @Transactional
 class CommentServiceTest {
 
