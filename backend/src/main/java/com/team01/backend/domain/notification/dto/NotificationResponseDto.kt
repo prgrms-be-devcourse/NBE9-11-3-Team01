@@ -1,28 +1,28 @@
-package com.team01.backend.domain.notification.dto;
+package com.team01.backend.domain.notification.dto
 
-import com.team01.backend.domain.notification.entity.Notification;
+import com.team01.backend.domain.notification.entity.Notification
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
-
-public record NotificationResponseDto(
-     Long id,
-     Long receiverId, //받는 사람 (userId)
-     Long senderId, //보내는 사람 (userId)
-     Long targetId, //url
-     String content, // 알림 내용
-     boolean isRead,
-     LocalDateTime createdAt
-){
-    public NotificationResponseDto(Notification notification){
-        this(
-                notification.getId(),
-                notification.getReceiverId(),
-                notification.getSenderId(),
-                notification.getTargetId(),
-                notification.getContent(),
-                notification.isRead(),
-                notification.getCreatedAt()
-        );
+data class NotificationResponseDto(
+    val id: Long,
+    val receiverId: Long,  //받는 사람 (userId)
+    val senderId: Long,  //보내는 사람 (userId)
+    val targetId: Long,  //url
+    val content: String,  // 알림 내용
+    val isRead: Boolean,
+    val createdAt: LocalDateTime
+) {
+    companion object {
+        @JvmStatic
+        fun from(notification: Notification): NotificationResponseDto =
+            NotificationResponseDto(
+                id = notification.id,
+                receiverId = notification.receiverId,
+                senderId = notification.senderId,
+                targetId = notification.targetId,
+                content = notification.content,
+                isRead = notification.alreadyRead,
+                createdAt = notification.createdAt,
+            )
     }
-
 }

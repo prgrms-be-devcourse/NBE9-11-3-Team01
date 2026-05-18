@@ -1,14 +1,11 @@
-package com.team01.backend.domain.notification.event;
+package com.team01.backend.domain.notification.event
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-@Getter
-@AllArgsConstructor
-public class ReplyCreatedEvent {
-    private final Long postId; // post Id
-    private final Long commentId; // comment Id
-    private final Long commentWriterId; //댓글 작성자 userId
-    private final Long replyId; // 답글 Id
-    private final Long replyWriterId; // 답글 작성자 userId
-    private final String replyContent; // 알림 내용 + 답글 내용
-}
+//@Getter
+data class ReplyCreatedEvent(
+    val postId: Long,              // post Id
+    val commentId: Long,           // comment Id
+    val commentWriterId: Long,     // 댓글 작성자 userId
+    val replyId: Long,             // 답글 Id
+    val replyWriterId: Long,       // 답글 작성자 userId
+    val replyContent: String       // 알림 내용 + 답글 내용
+)
