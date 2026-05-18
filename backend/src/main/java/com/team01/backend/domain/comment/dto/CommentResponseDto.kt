@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.team01.backend.domain.comment.entity.Comment
 import java.time.LocalDateTime
 
-class CommentResponseDto(
+data class CommentResponseDto(
     val id: Long,
     val content: String,
     val author: String,

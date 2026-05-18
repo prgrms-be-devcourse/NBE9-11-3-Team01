@@ -8,7 +8,7 @@ import com.team01.backend.domain.comment.entity.Comment
  * @param id      삭제된 댓글 id
  * @param message 삭제 API 성공 시 안내 문구(조회 시 [contentForRead]와 동일)
  */
-class CommentDeleteResponseDto(
+data class CommentDeleteResponseDto(
     val id: Long,
     val message: String,
 ) {

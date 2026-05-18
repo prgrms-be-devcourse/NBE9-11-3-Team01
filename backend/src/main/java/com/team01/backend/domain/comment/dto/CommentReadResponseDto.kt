@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 // 게시글 상세 조회 테스트 결과 답글 응답에 replies 빈 배열이 불필요하게 포함되는 문제가 있어서 추가
 // 답글의 replies는 항상 빈 배열이라 응답에 불필요 — NON_EMPTY로 빈 배열 필드 제외
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-class CommentReadResponseDto(
+data class CommentReadResponseDto(
     val id: Long,
     val content: String,
     val author: String,
