@@ -12,7 +12,7 @@ data class AdminBoardResponseDto(
     val createdAt: LocalDateTime,
     @field:JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     val modifiedAt: LocalDateTime,
-    val isDeleted: Boolean
+    val deleted: Boolean
 ) {
     constructor (board: Board):this(
         board.id,
@@ -31,7 +31,7 @@ data class AdminBoardResponseDto(
                 description = board.description,
                 createdAt = board.createdAt,
                 modifiedAt = board.modifiedAt,
-                isDeleted = board.deleted
+                deleted = board.deleted
             )
     }
 }
