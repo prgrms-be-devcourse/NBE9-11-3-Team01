@@ -94,6 +94,6 @@ class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException::class)
     fun handleAccessDenied(ex: AccessDeniedException): ResponseEntity<ApiResponse<Void>> {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            .body(ApiResponse.ofFailure("FORBIDDEN", ex.message))
+            .body(ApiResponse.ofFailure("FORBIDDEN", ex.message ?: "접근 권한이 없습니다."))
     }
 }
