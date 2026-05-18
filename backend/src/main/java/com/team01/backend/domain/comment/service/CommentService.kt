@@ -50,14 +50,17 @@ class CommentService(
         commentRepository.save(Comment(post, tempUser, content, parent))
     }
 
+    /** 로그인 사용자 조회 — 로그인 검증은 Controller, 여기서는 DB 사용자 로딩만 */
+    private fun findUser(email: String): User =
+        userRepository.findByEmail(email)
+            .orElseThrow { EntityNotFoundException("유저를 찾을 수 없습니다.") }
+
     //-----------------------------------------------------------------------------------------------------------------
 
-    // COMMENT-02 댓글(답글) 조회
+    // COMMENT-02 댓글(답글) 조회 — email은 Controller(또는 PostService)에서 전달, null이면 좋아요 여부 미표시
     @Transactional(readOnly = true)
     fun getCommentsByPostId(postId: Long, email: String?): List<CommentReadResponseDto> {
-        val userId = email?.let {
-            userRepository.findByEmail(it).map(User::id).orElse(null)
-        }
+        val userId = email?.let { findUser(it).id }
 
         // 기존 코드 유지
         val roots = commentRepository.findByPost_IdAndParentIsNullOrderByCreatedAtAsc(postId)
@@ -90,8 +93,7 @@ class CommentService(
 
     @Transactional
     fun writeComment(postId: Long, reqDto: CommentRequestDto, email: String): CommentResponseDto {
-        val user = userRepository.findByEmail(email) // DB 접근은 Service에서
-            .orElseThrow { EntityNotFoundException("유저를 찾을 수 없습니다.") }
+        val user = findUser(email)
 
         // 게시글 존재 확인
         val post = postRepository.findById(postId)
@@ -163,8 +165,7 @@ class CommentService(
 
     @Transactional
     fun updateComment(commentId: Long, reqDto: CommentRequestDto, email: String): CommentResponseDto {
-        val user = userRepository.findByEmail(email) // DB 접근은 Service에서
-            .orElseThrow { EntityNotFoundException("유저를 찾을 수 없습니다.") }
+        val user = findUser(email)
 
         // 댓글 존재 확인 -> code:404
         val comment = commentRepository.findById(commentId)
@@ -192,8 +193,7 @@ class CommentService(
      */
     @Transactional
     fun deleteComment(commentId: Long, email: String): CommentDeleteResponseDto {
-        val loginUser = userRepository.findByEmail(email)
-            .orElseThrow { EntityNotFoundException("유저를 찾을 수 없습니다.") }
+        val loginUser = findUser(email)
 
         val comment = commentRepository.findByIdWithPost(commentId)
             .orElseThrow { EntityNotFoundException("댓글을 찾을 수 없습니다.") }
@@ -223,8 +223,7 @@ class CommentService(
      */
     @Transactional
     fun toggleCommentLike(commentId: Long, email: String): CommentLikeToggleResponseDto {
-        val user = userRepository.findByEmail(email)
-            .orElseThrow { EntityNotFoundException("유저를 찾을 수 없습니다.") }
+        val user = findUser(email)
 
         val comment = commentLikeRepository.findCommentByIdAndPostForUpdate(commentId)
             .orElseThrow { EntityNotFoundException("댓글을 찾을 수 없습니다.") }

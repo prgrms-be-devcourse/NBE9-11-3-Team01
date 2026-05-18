@@ -21,26 +21,34 @@ class CommentController(
     private val commentService: CommentService,
 ) {
 
+    // 로그인 검증 — PostController와 동일하게 컨트롤러에서 처리
+    private fun validateLogin(userDetails: UserDetails?) {
+        if (userDetails == null) {
+            throw IllegalArgumentException("로그인이 필요한 서비스입니다.")
+        }
+    }
+
     // COMMENT-02 댓글(답글) 조회
-    @Operation(summary = "댓글 조회", description = "특정 게시글의 댓글/대댓글 목록을 조회합니다.")
+    @Operation(summary = "댓글 조회", description = "특정 게시글의 댓글/대댓글 목록을 조회합니다. 로그인한 사용자만 가능합니다.")
     @GetMapping("/posts/{postId}/comments")
     fun getComments(
         @PathVariable postId: Long,
         @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<List<CommentReadResponseDto>>> {
-        val email = userDetails?.username
-        val list = commentService.getCommentsByPostId(postId, email)
+        validateLogin(userDetails)
+        val list = commentService.getCommentsByPostId(postId, userDetails!!.username)
         return ResponseEntity.ok(ApiResponse.ofSuccess(list))
     }
 
-    @Operation(summary = "댓글 작성", description = "특정 게시글에 댓글 또는 대댓글을 작성합니다.")
+    @Operation(summary = "댓글 작성", description = "특정 게시글에 댓글 또는 대댓글을 작성합니다. 로그인한 사용자만 가능합니다.")
     @PostMapping("/posts/{postId}/comments")
     fun writeComment(
         @PathVariable postId: Long,
         @Valid @RequestBody reqDto: CommentRequestDto,
-        @AuthenticationPrincipal userDetails: UserDetails,
+        @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<CommentResponseDto>> {
-        val resDto = commentService.writeComment(postId, reqDto, userDetails.username)
+        validateLogin(userDetails)
+        val resDto = commentService.writeComment(postId, reqDto, userDetails!!.username)
         return ResponseEntity.ok(ApiResponse.ofSuccess(resDto))
     }
 
@@ -49,20 +57,22 @@ class CommentController(
     fun updateComment(
         @PathVariable commentId: Long,
         @Valid @RequestBody requestDto: CommentRequestDto,
-        @AuthenticationPrincipal userDetails: UserDetails,
+        @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<CommentResponseDto>> {
-        val resDto = commentService.updateComment(commentId, requestDto, userDetails.username)
+        validateLogin(userDetails)
+        val resDto = commentService.updateComment(commentId, requestDto, userDetails!!.username)
         return ResponseEntity.ok(ApiResponse.ofSuccess(resDto))
     }
 
     /** 댓글 좋아요 토글 — 한 번 호출 시 좋아요, 한 번 더 호출 시 취소 */
-    @Operation(summary = "댓글 좋아요 토글", description = "댓글 좋아요를 등록/취소합니다.")
+    @Operation(summary = "댓글 좋아요 토글", description = "댓글 좋아요를 등록/취소합니다. 로그인한 사용자만 가능합니다.")
     @PostMapping("/comments/{commentId}/likes")
     fun toggleCommentLike(
         @PathVariable commentId: Long,
-        @AuthenticationPrincipal userDetails: UserDetails,
+        @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<CommentLikeToggleResponseDto>> {
-        val dto = commentService.toggleCommentLike(commentId, userDetails.username)
+        validateLogin(userDetails)
+        val dto = commentService.toggleCommentLike(commentId, userDetails!!.username)
         return ResponseEntity.ok(ApiResponse.ofSuccess(dto))
     }
 
@@ -71,9 +81,10 @@ class CommentController(
     @DeleteMapping("/comments/{commentId}")
     fun deleteComment(
         @PathVariable commentId: Long,
-        @AuthenticationPrincipal userDetails: UserDetails,
+        @AuthenticationPrincipal userDetails: UserDetails?,
     ): ResponseEntity<ApiResponse<CommentDeleteResponseDto>> {
-        val body = commentService.deleteComment(commentId, userDetails.username)
+        validateLogin(userDetails)
+        val body = commentService.deleteComment(commentId, userDetails!!.username)
         return ResponseEntity.ok(ApiResponse.ofSuccess(body))
     }
 }
