@@ -8,9 +8,9 @@ import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
 // 인증 코드와 만료 시간을 담는 데이터 클래스
-data class VerificationCode(
+private data class VerificationCode(
     val code: String,
-    val expiredAt: LocalDateTime = LocalDateTime.now().plusMinutes(5)
+    val issuedAt: LocalDateTime = LocalDateTime.now()
 )
 
 @Service
@@ -37,7 +37,7 @@ class MailService(private val mailSender: JavaMailSender) {
         val stored = codeStore[email] ?: return false
         
         // 1. 수동적 만료 검사
-        if (LocalDateTime.now().isAfter(stored.expiredAt)) {
+        if (LocalDateTime.now().isAfter(stored.issuedAt.plusMinutes(VERIFICATION_CODE_TTL_MINUTES))) {
             codeStore.remove(email)
             return false
         }
@@ -53,6 +53,10 @@ class MailService(private val mailSender: JavaMailSender) {
     @Scheduled(fixedRate = 3600000)
     fun cleanupStore() {
         val now = LocalDateTime.now()
-        codeStore.entries.removeIf { it.value.expiredAt.isBefore(now) }
+        codeStore.entries.removeIf { entry -> entry.value.issuedAt.plusMinutes(VERIFICATION_CODE_TTL_MINUTES).isBefore(now) }
+    }
+
+    companion object {
+        private const val VERIFICATION_CODE_TTL_MINUTES = 5L
     }
 }

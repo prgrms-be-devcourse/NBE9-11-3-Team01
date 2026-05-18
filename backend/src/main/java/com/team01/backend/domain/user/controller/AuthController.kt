@@ -4,11 +4,11 @@ import com.team01.backend.domain.user.dto.*
 import com.team01.backend.domain.user.service.AuthService
 import com.team01.backend.domain.user.service.MailService
 import com.team01.backend.global.response.ApiResponse
+import com.team01.backend.global.security.TokenReissueException
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletResponse
-import jakarta.servlet.http.HttpSession
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -44,11 +44,9 @@ class AuthController(
     @PostMapping("/login")
     fun login(
         @Valid @RequestBody request: LoginRequest,
-        response: HttpServletResponse,
-        session: HttpSession
+        response: HttpServletResponse
     ): ResponseEntity<ApiResponse<Void>> {
         val tokenDto = authService.login(request)
-        session.setAttribute("USER_EMAIL", request.email)
         setAuthCookies(response, tokenDto)
         return ResponseEntity.ok(ApiResponse.ofSuccessWithoutBody())
     }
@@ -60,7 +58,7 @@ class AuthController(
         response: HttpServletResponse
     ): ResponseEntity<ApiResponse<Void>> {
         if (refreshToken.isNullOrBlank()) {
-            throw IllegalArgumentException("인증 정보가 누락되었습니다. 다시 로그인하십시오.")
+            throw TokenReissueException("REFRESH_TOKEN_MISSING", "인증 정보가 누락되었습니다. 다시 로그인하십시오.")
         }
         val newAccessToken = authService.reissue(refreshToken)
         val accessCookie = createCookie("accessToken", newAccessToken, 900)
@@ -106,12 +104,10 @@ class AuthController(
     @PostMapping("/logout")
     fun logout(
         authentication: Authentication?, // [유지] Null 허용
-        response: HttpServletResponse,
-        session: HttpSession
+        response: HttpServletResponse
     ): ResponseEntity<ApiResponse<Void>> {
         if (authentication == null) throw IllegalArgumentException("인증 정보가 없습니다.")
         authService.logout(authentication.name)
-        session.invalidate()
         clearAuthCookies(response)
         return ResponseEntity.ok(ApiResponse.ofSuccessWithoutBody())
     }
@@ -121,12 +117,10 @@ class AuthController(
     @DeleteMapping("/withdraw")
     fun withdraw(
         authentication: Authentication?,
-        response: HttpServletResponse,
-        session: HttpSession
+        response: HttpServletResponse
     ): ResponseEntity<ApiResponse<Void>> {
         if (authentication == null) throw IllegalArgumentException("인증 정보가 없습니다.")
         authService.withdraw(authentication.name)
-        session.invalidate()
         clearAuthCookies(response)
         return ResponseEntity.ok(ApiResponse.ofSuccessWithoutBody())
     }

@@ -38,7 +38,7 @@ class PostRepositoryImpl(
             .join(post.get("category", Category::class.java), category).fetchJoin()
             .where(
                 boardIdEq(boardId),
-                post.getBoolean("isDeleted").eq(false),
+                post.getBoolean("deleted").eq(false),
                 containsKeyword(keyword),
                 eqCategoryId(categoryId),
             )
@@ -59,7 +59,7 @@ class PostRepositoryImpl(
                 .from(post)
                 .where(
                         boardIdEq(boardId),
-                        post.getBoolean("isDeleted").eq(false),
+                    post.getBoolean("deleted").eq(false),
                         containsKeyword(keyword),
                         eqCategoryId(categoryId),
                         )
