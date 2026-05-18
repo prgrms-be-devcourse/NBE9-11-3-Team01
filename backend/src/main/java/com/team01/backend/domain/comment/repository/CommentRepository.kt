@@ -7,13 +7,12 @@ import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.util.Optional
 
 interface CommentRepository : JpaRepository<Comment, Long> {
 
     // COMMENT-04 삭제 — 댓글·게시글·작성자 동시 로딩
     @Query("SELECT DISTINCT c FROM Comment c JOIN FETCH c.post JOIN FETCH c.user WHERE c.id = :id")
-    fun findByIdWithPost(@Param("id") id: Long): Optional<Comment>
+    fun findByIdWithPost(@Param("id") id: Long): Comment?
 
     // COMMENT-02 댓글(답글) 조회 — 게시글별 루트(삭제 포함, 응답에서 문구 마스킹)
     @EntityGraph(attributePaths = ["user"])
