@@ -22,10 +22,11 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
-import org.springframework.security.access.AccessDeniedException
+
 
 
 
@@ -80,7 +81,9 @@ class PostService(
         categoryId: Long
     ): Post {
         val author = userRepository.findByEmail(email)
-            .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
+            //TODO UserRepository.findByEmail optional 제거 되면 .orElseThrow 지우고, 아래 주석 코드로 변경
+            //?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
+                .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
 
         // 게시판, 카테고리 조회
         val board = boardRepository.findByIdAndDeletedFalse(boardId)
@@ -144,6 +147,7 @@ class PostService(
                 ) != null
         val comments = commentService.getCommentsByPostId(postId, currentUser?.email)
 
+
         return PostDetailResponseDto.of(post, post.board, post.category, comments, isOwner, liked)
     }
 
@@ -161,9 +165,9 @@ class PostService(
         val post = postRepository.findByIdOrNull(postId)
             ?: throw EntityNotFoundException("게시글을 찾을 수 없습니다.")
 
-        val actor = userRepository.findByEmail(email)
         //TODO UserRepository.findByEmail optional 제거 되면 .orElseThrow 지우고, 아래 주석 코드로 변경
-        // ?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
+        // val actor = userRepository.findByEmail(email) ?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
+        val actor = userRepository.findByEmail(email)
             .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
 
 
@@ -193,9 +197,9 @@ class PostService(
             ?: throw EntityNotFoundException("해당 게시물을 찾을 수 없습니다.")
 
         // 요청 유저(actor) 조회
-        val actor = userRepository.findByEmail(email)
         //TODO UserRepository.findByEmail optional 제거 되면 .orElseThrow 지우고, 아래 주석 코드로 변경
-        //?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
+        // val actor = userRepository.findByEmail(email) ?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
+        val actor = userRepository.findByEmail(email)
             .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
 
         // 삭제 여부 확인 (컨벤션 2번: isDeleted 대신 deleted 프로퍼티 사용)
