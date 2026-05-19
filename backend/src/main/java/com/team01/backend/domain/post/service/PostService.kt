@@ -26,9 +26,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 
-
-
-
 @Service
 @Transactional(readOnly = true)
 class PostService(
@@ -140,14 +137,15 @@ class PostService(
         validatePost(post)
 
         val currentUser = userRepository.findByEmail(email)
-            ?.let { if (it.isPresent) it.get() else null }
-        val isOwner = currentUser != null && post.author.id == currentUser.id
-        val liked = currentUser != null &&
-                postLikeRepository.findByUserIdAndPostId(
-                    currentUser.id ?: throw IllegalStateException("사용자 ID가 없습니다."),
-                    postId
-                ) != null
-        val comments = commentService.getCommentsByPostId(postId, currentUser?.email)
+            .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
+
+        val isOwner = post.author.id == currentUser.id
+        val liked = postLikeRepository.findByUserIdAndPostId(
+            currentUser.id ?: throw IllegalStateException("사용자 ID가 없습니다."),
+            postId
+        ) != null
+
+        val comments = commentService.getCommentsByPostId(postId, currentUser.id)  // Long? 버전 호출
 
         return PostDetailResponseDto.of(post, post.board, post.category, comments, isOwner, liked)
     }

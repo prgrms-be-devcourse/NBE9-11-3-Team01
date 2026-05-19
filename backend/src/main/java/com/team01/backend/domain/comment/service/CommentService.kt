@@ -92,6 +92,35 @@ class CommentService(
         }
     }
 
+    // userId로 직접 받는 버전 추가 (PostService 전용)
+    @Transactional(readOnly = true)
+    fun getCommentsByPostId(postId: Long, userId: Long?): List<CommentReadResponseDto> {
+        val roots = commentRepository.findByPost_IdAndParentIsNullOrderByCreatedAtAsc(postId)
+        if (roots.isEmpty()) return emptyList()
+
+        val rootIds = roots.map { it.id }
+        val allReplies = commentRepository.findByParent_IdInOrderByCreatedAtAsc(rootIds)
+
+        val allCommentIds = buildList {
+            addAll(rootIds)
+            addAll(allReplies.map { it.id })
+        }
+
+        val likedCommentIds: Set<Long> = userId?.let { uid ->
+            commentLikeRepository.findLikedCommentIdsByUserId(uid, allCommentIds).toHashSet()
+        } ?: emptySet()
+
+        val repliesByParentId = allReplies.groupBy { it.parent!!.id }
+
+        return roots.map { root ->
+            CommentReadResponseDto.of(
+                root,
+                repliesByParentId[root.id].orEmpty(),
+                likedCommentIds,
+            )
+        }
+    }
+
     @Transactional
     fun writeComment(postId: Long, reqDto: CommentRequestDto, email: String): CommentResponseDto {
         val user = findUser(email)
