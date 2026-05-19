@@ -10,9 +10,14 @@ import java.util.Collections
 
 @Service
 class CustomUserDetailsService(private val userRepository: UserRepository) : UserDetailsService {
+    
+    /**
+     * 스프링 시큐리티의 입구 서블릿 필터와 연계되어 신원을 조회하는 코어 핵심 다리일세.
+     * 이메일을 기반으로 계정을 파악하고 권한 컬렉션을 안전하게 바인딩하여 반환하네.
+     */
     override fun loadUserByUsername(email: String): UserDetails {
         val user = userRepository.findByEmail(email)
-            .orElseThrow { UsernameNotFoundException("이메일을 찾을 수 없습니다 : $email") }
+            ?: throw UsernameNotFoundException("이메일을 찾을 수 없습니다 : $email")
 
         return org.springframework.security.core.userdetails.User(
             user.email,
