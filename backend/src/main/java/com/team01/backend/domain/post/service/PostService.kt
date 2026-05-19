@@ -122,6 +122,9 @@ class PostService(
         categoryId: Long?,
         sort: String,
     ): PostPageResponseDto {
+        boardRepository.findByIdAndDeletedFalse(boardId)
+            ?: throw EntityNotFoundException("존재하지 않는 게시판입니다.")
+
         val postPage = postRepository
             .searchByBoardId(boardId, keyword, categoryId, toPageable(page), sort)
             .map { PostResponseDto.of(it) }

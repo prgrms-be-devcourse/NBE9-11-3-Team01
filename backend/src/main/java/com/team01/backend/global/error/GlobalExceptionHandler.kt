@@ -3,6 +3,7 @@ package com.team01.backend.global.error
 import com.team01.backend.global.response.ApiResponse
 import com.team01.backend.global.security.TokenReissueException
 import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -43,6 +44,13 @@ class GlobalExceptionHandler {
                     ex.message ?: "요청을 처리할 수 없습니다.",
                 ),
             )
+    }
+
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun handleConstraintViolation(ex: ConstraintViolationException): ResponseEntity<ApiResponse<Void>> {
+        val message = ex.constraintViolations.joinToString(" / ") { it.message }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.ofFailure("INVALID_INPUT", message))
     }
 
     @ExceptionHandler(EntityNotFoundException::class)

@@ -1,7 +1,7 @@
 package com.team01.backend.domain.comment.controller
 
 import com.jayway.jsonpath.JsonPath
-import com.team01.backend.config.TestMailConfig
+//import com.team01.backend.config.TestMailConfig
 import com.team01.backend.config.TestRedisConfig
 import com.team01.backend.domain.comment.dto.CommentDeleteResponseDto
 import com.team01.backend.domain.comment.repository.CommentRepository
@@ -40,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@Import(TestMailConfig::class, TestRedisConfig::class)
+//@Import(TestMailConfig::class, TestRedisConfig::class)
 @Transactional
 class CommentControllerTest {
 
@@ -351,5 +351,32 @@ class CommentControllerTest {
     @DisplayName("댓글 조회 실패 - 비로그인")
     fun getComments_withoutLogin_fails() {
         mvc.perform(get("/posts/${testPost.id}/comments")).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @DisplayName("댓글 작성 실패 - 비로그인")
+    fun writeComment_withoutLogin_fails() {
+        mvc.perform(
+            post("/posts/${testPost.id}/comments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"content": "비로그인"}"""),
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 비로그인")
+    fun updateComment_withoutLogin_fails() {
+        val res = mvc.perform(
+            post("/posts/${testPost.id}/comments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(authCookie())
+                .content("""{"content": "원본"}"""),
+        ).andReturn().response.contentAsString
+        val id = JsonPath.read<Int>(res, "$.data.id")
+        mvc.perform(
+            put("/comments/$id")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"content": "수정"}"""),
+        ).andExpect(status().isUnauthorized)
     }
 }
