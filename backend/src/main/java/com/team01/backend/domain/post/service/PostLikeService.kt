@@ -26,26 +26,28 @@ class PostLikeService(
     @Transactional
     fun toggleLike(postId: Long, email: String): PostLikeResponseDto {
         val user = findUser(email)
-        val post = findPost(postId) // 검증과 동시에 Post 객체 확보
 
-        val inserted = postLikeRepository.tryInsert(user.id, postId)
-        val liked = if (inserted > 0) {
-            postRepository.increaseLikeCount(postId)
-            true
-        } else {
-            val deleted = postLikeRepository.deleteByUserIdAndPostId(user.id, postId)
-            if (deleted > 0) {
-                postRepository.decreaseLikeCount(postId)
-                false
-            } else {
-                true
-            }
+        // CommentLike와 동일: 대상 엔티티(Post)에 비관적 락
+        val post = postLikeRepository.findPostByIdForUpdate(postId)
+            ?: throw EntityNotFoundException("게시글을 찾을 수 없습니다.")
+
+        if (post.deleted) throw EntityNotFoundException("삭제된 게시글입니다.")
+
+        // DELETE 시도 → 행이 있었으면 unlike
+        val removed = postLikeRepository.deleteByPost_IdAndUser_Id(postId, user.id)
+        if (removed > 0) {
+            post.decrementLikeCount()
+            evictTop5Cache(post.board.id)
+            return PostLikeResponseDto(false, post.likeCount)
         }
-        evictTop5Cache(post.board.id)
 
-        val likeCount = postLikeRepository.countByPostId(postId)
-        return PostLikeResponseDto(liked, likeCount)
+        // 행이 없었으면 like
+        postLikeRepository.save(PostLike(user, post))
+        post.incrementLikeCount()
+        evictTop5Cache(post.board.id)
+        return PostLikeResponseDto(true, post.likeCount)
     }
+
 
     // ─────────────────────────────────────────────────────────────
     // 좋아요 수 조회 - DB

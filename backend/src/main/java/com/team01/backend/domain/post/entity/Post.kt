@@ -78,4 +78,12 @@ class Post : BaseEntity {
     fun initLikeCount(likeCount: Int) {
         this.likeCount = likeCount
     }
+
+    fun incrementLikeCount() {
+        likeCount++
+    }
+
+    fun decrementLikeCount() {
+        if (likeCount > 0) likeCount--
+    }
 }

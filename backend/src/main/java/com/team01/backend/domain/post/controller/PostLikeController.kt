@@ -43,5 +43,4 @@ class PostLikeController(
                 postLikeService.getLikeCount(postId)
             )
         )
-
 }
