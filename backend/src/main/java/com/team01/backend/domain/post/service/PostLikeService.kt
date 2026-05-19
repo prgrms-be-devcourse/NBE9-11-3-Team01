@@ -71,7 +71,7 @@ class PostLikeService(
     // ─────────────────────────────────────────────────────────────
     private fun findUser(email: String): User =
         userRepository.findByEmail(email)
-            .orElseThrow{ EntityNotFoundException("유저를 찾을 수 없어요")}
+            ?: throw EntityNotFoundException("유저를 찾을 수 없어요")
 
 
     private fun findPost(postId: Long): Post =
