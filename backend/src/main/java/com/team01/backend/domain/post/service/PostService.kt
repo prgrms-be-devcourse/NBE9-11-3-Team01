@@ -79,7 +79,7 @@ class PostService(
         val author = userRepository.findByEmail(email)
             //TODO UserRepository.findByEmail optional 제거 되면 .orElseThrow 지우고, 아래 주석 코드로 변경
             //?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
-                .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
+            .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
 
         // 게시판, 카테고리 조회
         val board = boardRepository.findByIdAndDeletedFalse(boardId)
@@ -137,15 +137,14 @@ class PostService(
         validatePost(post)
 
         val currentUser = userRepository.findByEmail(email)
-            .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
-
-        val isOwner = post.author.id == currentUser.id
-        val liked = postLikeRepository.findByUserIdAndPostId(
-            currentUser.id ?: throw IllegalStateException("사용자 ID가 없습니다."),
-            postId
-        ) != null
-
-        val comments = commentService.getCommentsByPostId(postId, currentUser.id)  // Long? 버전 호출
+            ?.let { if (it.isPresent) it.get() else null }
+        val isOwner = currentUser != null && post.author.id == currentUser.id
+        val liked = currentUser != null &&
+                postLikeRepository.findByPost_IdAndUser_Id(
+                    postId,
+                    currentUser.id ?: throw IllegalStateException("사용자 ID가 없습니다.")
+                ) != null
+        val comments = commentService.getCommentsByPostId(postId, currentUser?.email)
 
         return PostDetailResponseDto.of(post, post.board, post.category, comments, isOwner, liked)
     }
