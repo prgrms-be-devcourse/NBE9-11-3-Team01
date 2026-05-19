@@ -9,7 +9,7 @@ data class NotificationReadResponseDto(
     val senderId: Long,  //보내는 사람 (userId)
     val targetId: Long,  //url
     val content: String,  // 알림 내용
-    val isRead: Boolean,
+    val alreadyRead: Boolean,
     val createdAt: LocalDateTime,
     val modifiedAt: LocalDateTime
 ) {
@@ -22,7 +22,7 @@ data class NotificationReadResponseDto(
                 senderId = notification.senderId,
                 targetId = notification.targetId,
                 content = notification.content,
-                isRead = notification.alreadyRead,
+                alreadyRead = notification.alreadyRead,
                 createdAt = notification.createdAt,
                 modifiedAt = notification.modifiedAt,
             )

@@ -5,15 +5,15 @@ import jakarta.persistence.Entity
 
 @Entity
 class Notification(receiverId: Long, senderId: Long, targetId: Long, content: String) : BaseEntity() {
-    var receiverId = receiverId
+    var receiverId:Long = receiverId
         protected set
-    var senderId = senderId
+    var senderId:Long = senderId
         protected set
-    var targetId = targetId
+    var targetId:Long = targetId
         protected set
-    var content = content
+    var content:String = content
         protected set
-    var alreadyRead = false
+    var alreadyRead: Boolean = false
         protected set
     fun read() {
         this.alreadyRead = true
