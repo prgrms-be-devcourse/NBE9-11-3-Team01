@@ -82,7 +82,7 @@ class PostService(
         val author = userRepository.findByEmail(email)
             //TODO UserRepository.findByEmail optional 제거 되면 .orElseThrow 지우고, 아래 주석 코드로 변경
             //?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
-                .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
+            .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
 
         // 게시판, 카테고리 조회
         val board = boardRepository.findByIdAndDeletedFalse(boardId)

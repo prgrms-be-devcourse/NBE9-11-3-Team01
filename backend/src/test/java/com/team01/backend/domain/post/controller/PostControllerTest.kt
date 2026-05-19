@@ -1,34 +1,41 @@
 package com.team01.backend.domain.post.controller
 
 import com.team01.backend.domain.board.entity.Board
-import com.team01.backend.domain.post.entity.Post
+import com.team01.backend.domain.board.repository.BoardRepository
+import com.team01.backend.domain.category.entity.Category
+import com.team01.backend.domain.category.repository.CategoryRepository
+import com.team01.backend.domain.post.repository.PostRepository
 import com.team01.backend.domain.post.service.PostService
 import com.team01.backend.global.security.JwtTokenProvider
+import jakarta.persistence.EntityNotFoundException
 import jakarta.servlet.http.Cookie
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyles
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.redis.connection.ReactiveStringCommands.BitOpCommand.perform
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 
 @SpringBootTest
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
 class PostControllerTest {
@@ -36,27 +43,20 @@ class PostControllerTest {
     @Autowired
     private lateinit var webApplicationContext: WebApplicationContext
 
+    @Autowired
     private lateinit var mvc: MockMvc
 
-    @BeforeEach
-    fun setup() {
-        mvc = MockMvcBuilders
-            .webAppContextSetup(webApplicationContext)
-            .apply<DefaultMockMvcBuilder>(springSecurity())
-            .build()
-    }
-
-    /*@Autowired
-    private lateinit var PostRepository: postRepository*/
+    @Autowired
+    private lateinit var postRepository: PostRepository
 
     @Autowired
     private lateinit var postService: PostService
 
-    /*@Autowired
-    private lateinit var CategoryRepository: categoryRepository*/
+    @Autowired
+    private lateinit var categoryRepository: CategoryRepository
 
-    /*@Autowired
-    private lateinit var BoardRepository: boardRepository*/
+    @Autowired
+    private lateinit var boardRepository: BoardRepository
 
     @Autowired
     private lateinit var jwtTokenProvider: JwtTokenProvider
@@ -65,6 +65,7 @@ class PostControllerTest {
 
     @BeforeEach
     fun setToken() {
+
         val user1AccessToken = jwtTokenProvider.createAccessToken("user1@test.com", "ROLE_USER")
 
         user1Cookie = Cookie("accessToken", user1AccessToken)
@@ -113,271 +114,294 @@ class PostControllerTest {
             .andExpect(jsonPath("$.code").value("NOT_FOUND"))
     }
 
-    /*@Test
+    @Test
     @DisplayName("글 작성")
-    void t3() throws Exception {
+    fun t3() {
+        val title = "제목입니다."
+        val content = "내용입니다."
+        val boardId = 1L
+        val categoryId = 1L
 
-        String title = "제목입니다.";
-        String content = "내용입니다.";
-        Long boardId = 1L;
-        Long categoryId = 1L;
-
-        // 쿠키로 인증
-        ResultActions resultActions = mvc
-                .perform(
-                        post("/posts")
-                                .cookie(user1Cookie)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                    {
-                                        "title": "%s",
-                                        "content": "%s",
-                                        "boardId" : %d,
-                                        "categoryId" : %d
-                                    }
-                                    """.formatted(HtmlStyles.title, content, boardId, categoryId))
-                )
-                .andDo(print());
+        val resultActions = mvc
+            .perform(
+                post("/posts")
+                    .cookie(user1Cookie)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                            "title": "$title",
+                            "content": "$content",
+                            "boardId": $boardId,
+                            "categoryId": $categoryId
+                        }
+                        """.trimIndent()
+                    )
+            )
+            .andDo(print())
 
         // 검증
         resultActions
-                .andExpect(handler().handlerType(PostController.class))
-                .andExpect(handler().methodName("write"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.id").exists())
-                .andExpect(jsonPath("$.data.title").value(HtmlStyles.title))
-                .andExpect(jsonPath("$.data.content").value(content))
-                .andExpect(jsonPath("$.data.createdAt").exists())
-                .andExpect(jsonPath("$.data.modifiedAt").exists());
-    }*/
+            .andExpect(handler().handlerType(PostController::class.java))
+            .andExpect(handler().methodName("write"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.data.id").exists())
+            .andExpect(jsonPath("$.data.title").value(title))
+            .andExpect(jsonPath("$.data.content").value(content))
+            .andExpect(jsonPath("$.data.createdAt").exists())
+            .andExpect(jsonPath("$.data.modifiedAt").exists())
+    }
 
-    /*@Test
+    @Test
     @DisplayName("글 작성 실패 - 제목이 입력되지 않은 경우")
-    void t4() throws Exception {
+    fun t4() {
+        val title = ""
+        val content = "내용입니다."
+        val boardId = 1L
+        val categoryId = 1L
 
-        String title = "";
-        String content = "내용입니다.";
-        Long boardId = 1L;
-        Long categoryId = 1L;
-
-
-        ResultActions resultActions = mvc
-                .perform(
-                        post("/posts")
-                                .cookie(user1Cookie)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                    {
-                                        "title": "%s",
-                                        "content": "%s",
-                                        "boardId": %d,
-                                        "categoryId": %d
-                                    }
-                                    """.formatted(HtmlStyles.title, content, boardId, categoryId))
-                )
-                .andDo(print());
+        val resultActions = mvc
+            .perform(
+                post("/posts")
+                    .cookie(user1Cookie)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                            "title": "$title",
+                            "content": "$content",
+                            "boardId": $boardId,
+                            "categoryId": $categoryId
+                        }
+                        """.trimIndent()
+                    )
+            )
+            .andDo(print())
 
         resultActions
-                .andExpect(handler().handlerType(PostController.class))
-                .andExpect(handler().methodName("write"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value("INVALID_INPUT"))
-                .andExpect(jsonPath("$.message").exists());
-    }*/
+            .andExpect(handler().handlerType(PostController::class.java))
+            .andExpect(handler().methodName("write"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.code").value("INVALID_INPUT"))
+            .andExpect(jsonPath("$.message").exists())
+    }
 
-    /*@Test
+    @Test
     @DisplayName("글 작성, 내용이 입력되지 않은 경우")
-    void t5() throws Exception {
+    fun t5() {
+        val title = "제목입니다."
+        val content = ""
+        val boardId = 1L
+        val categoryId = 1L
 
-        String title = "제목입니다.";
-        String content = "";
-        Long boardId = 1L;
-        Long categoryId = 1L;
-
-        ResultActions resultActions = mvc
-                .perform(
-                        post("/posts")
-                                .cookie(user1Cookie)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(
-                                        """
-                                        {
-                                            "title": "%s",
-                                            "content": "%s",
-                                            "boardId": %d,
-                                            "categoryId": %d
-                                        }
-                                        """.formatted(HtmlStyles.title, content, boardId, categoryId))
-                )
-                .andDo(print());
+        val resultActions = mvc
+            .perform(
+                post("/posts")
+                    .cookie(user1Cookie)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                            "title": "$title",
+                            "content": "$content",
+                            "boardId": $boardId,
+                            "categoryId": $categoryId
+                        }
+                        """.trimIndent()
+                    )
+            )
+            .andDo(print())
 
         resultActions
-                .andExpect(handler().handlerType(PostController.class))
-                .andExpect(handler().methodName("write"))
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value("INVALID_INPUT"))
-                .andExpect(jsonPath("$.message").exists());
-    }*/
+            .andExpect(handler().handlerType(PostController::class.java))
+            .andExpect(handler().methodName("write"))
+            .andExpect(status().isBadRequest()) // 💡 입력값 검증 실패에 따른 상태코드(400) 검증을 명확히 추가했습니다.
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.code").value("INVALID_INPUT"))
+            .andExpect(jsonPath("$.message").exists())
+    }
 
-    /*@Test
+    @Test
     @DisplayName("글 작성 실패 - JSON 양식이 잘못된 경우")
-    void t6() throws Exception {
+    fun t6() {
+        val title = "제목입니다."
+        val content = "내용입니다."
 
-        String title = "제목입니다.";
-        String content = "내용입니다.";
-
-        ResultActions resultActions = mvc
-                .perform(
-                        post("/posts")
-                                .cookie(user1Cookie)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                    {
-                                        "title": "%s"   // , 누락
-                                        "content": "%s"
-                                    }
-                                    """.formatted(HtmlStyles.title, content))
-                )
-                .andDo(print());
+        val resultActions = mvc
+            .perform(
+                post("/posts")
+                    .cookie(user1Cookie)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                            "title": "$title"   // 의도적인 콤마(,) 누락으로 INVALID_JSON 유도
+                            "content": "$content"
+                        }
+                        """.trimIndent()
+                    )
+            )
+            .andDo(print())
 
         resultActions
-                .andExpect(handler().handlerType(PostController.class))
-                .andExpect(handler().methodName("write"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value("INVALID_JSON"))
-                .andExpect(jsonPath("$.message").value("잘못된 형식의 JSON 데이터입니다."));
-    }*/
+            .andExpect(handler().handlerType(PostController::class.java))
+            .andExpect(handler().methodName("write"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.code").value("INVALID_JSON"))
+            .andExpect(jsonPath("$.message").value("잘못된 형식의 JSON 데이터입니다."))
+    }
 
 
-    /*@Test
+    @Test
     @DisplayName("글 수정 성공 - 제목, 내용, 올바른 카테고리 변경")
-    void t7_1() throws Exception {
-
+    fun t7_1() {
         // 기존 게시글 정보 조회 (연관된 게시판 ID를 얻기 위해서)
-        Long targetId = 1L;
-        Post targetPost = postRepository.findById(targetId)
-                .orElseThrow(() -> new EntityNotFoundException("대상 게시글 없음"));
+
+        val targetId = 1L
+        val targetPost = postRepository.findById(targetId).orElse(null)
+            ?: throw EntityNotFoundException("대상 게시글 없음")
 
         // 해당 게시판에 속한 다른 카테고리를 새롭게 준비 (검증 로직 통과를 위함)
-        Long targetBoardId = targetPost.getBoard().getId();
-        Category newCategory = categoryRepository.save(new Category(targetBoardId, "수정된 카테고리"));
-        Long newCategoryId = newCategory.getId();
+        val targetBoardId = targetPost.board.id
+        val newCategory = categoryRepository.save(
+            Category(
+                boardId = targetBoardId,
+                name = "수정된 카테고리"
+            )
+        )
+        val newCategoryId = newCategory.id
 
-        String title = "제목 수정";
-        String content = "내용 수정";
+        val title = "제목 수정"
+        val content = "내용 수정"
 
-        ResultActions resultActions = mvc
-                .perform(
-                        put("/posts/%d".formatted(targetId))
-                                .cookie(user1Cookie)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(
-                                        """
-                                        {
-                                            "title" : "%s",
-                                            "content" : "%s",
-                                            "categoryId" : %d
-                                        }
-                                        """.formatted(HtmlStyles.title, content, newCategoryId))
-                )
-                .andDo(print());
+        val resultActions = mvc
+            .perform(
+                put("/posts/$targetId") // 접두사 제거 완료
+                    .cookie(user1Cookie)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                            "title": "$title",
+                            "content": "$content",
+                            "categoryId": $newCategoryId
+                        }
+                        """.trimIndent()
+                    )
+            )
+            .andDo(print())
 
 
         resultActions
-                .andExpect(handler().handlerType(PostController.class))
-                .andExpect(handler().methodName("modify"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.title").value(HtmlStyles.title))
-                .andExpect(jsonPath("$.data.content").value(content))
-                .andExpect(jsonPath("$.data.categoryId").value(newCategoryId))
-                .andExpect(jsonPath("$.data.categoryName").value("수정된 카테고리"));
+            .andExpect(handler().handlerType(PostController::class.java))
+            .andExpect(handler().methodName("modify"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.data.title").value(title))
+            .andExpect(jsonPath("$.data.content").value(content))
+            .andExpect(jsonPath("$.data.categoryId").value(newCategoryId))
+            .andExpect(jsonPath("$.data.categoryName").value("수정된 카테고리"))
 
-        Post post = postRepository.findById(targetId).get();
-        assertThat(post.getTitle()).isEqualTo(HtmlStyles.title);
-        assertThat(post.getContent()).isEqualTo(content);
-        assertThat(post.getCategory().getId()).isEqualTo(newCategoryId);
-    }*/
+        val post = postRepository.findById(targetId).orElse(null)
+            ?: throw EntityNotFoundException()
 
-    /*@Test
+        AssertionsForClassTypes.assertThat(post.title).isEqualTo(title)
+        AssertionsForClassTypes.assertThat(post.content).isEqualTo(content)
+        AssertionsForClassTypes.assertThat(post.category.id).isEqualTo(newCategoryId)
+    }
+
+    @Test
     @DisplayName("글 수정 실패 - 다른 게시판의 카테고리 ID를 전달한 경우")
-    void t7_2() throws Exception {
-
+    fun t7_2() {
         // 기존 게시글 준비
-        Long targetId = 1L;
-        Post targetPost = postRepository.findById(targetId).get();
-//        Long originalBoardId = targetPost.getBoard().getId();
+
+        val targetId = 1L
+        val targetPost = postRepository.findById(targetId).orElse(null)
+            ?: throw EntityNotFoundException("대상 게시글 없음")
+
+        //        Long originalBoardId = targetPost.getBoard().getId();
 
         // 다른 게시판, 그 게시판의 카테고리 생성 (예: 공지사항 게시판)
-        Board anotherBoard = boardRepository.save(new Board("공지사항", "공지사항 게시판"));
-        Category invalidCategory = categoryRepository.save(new Category(anotherBoard.getId(), "공지용 카테고리"));
-        Long invalidCategoryId = invalidCategory.getId();
+        val anotherBoard = boardRepository.save(
+            Board(
+                name = "공지사항",
+                description = "공지사항 게시판"
+            )
+        )
+        val invalidCategory = categoryRepository.save(
+            Category(
+                boardId = anotherBoard.id,
+                name = "공지용 카테고리"
+            )
+        )
+        val invalidCategoryId = invalidCategory.id
 
-
-        ResultActions resultActions = mvc
-                .perform(
-                        put("/posts/%d".formatted(targetId))
-                                .cookie(user1Cookie)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(
-                                        """
-                                        {
-                                            "title" : "수정 시도",
-                                            "content" : "내용 수정 시도",
-                                            "categoryId" : %d
-                                        }
-                                        """.formatted(invalidCategoryId))
-                )
-                .andDo(print());
+        val resultActions = mvc
+            .perform(
+                put("/posts/$targetId")
+                    .cookie(user1Cookie)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                            "title": "수정 시도",
+                            "content": "내용 수정 시도",
+                            "categoryId": $invalidCategoryId
+                        }
+                        """.trimIndent()
+                    )
+            )
+            .andDo(print())
 
 
         resultActions
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value("INVALID_INPUT"))
-                .andExpect(jsonPath("$.message").value("해당 게시판에서 사용할 수 없는 카테고리입니다."));
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.code").value("INVALID_INPUT"))
+            .andExpect(jsonPath("$.message").value("해당 게시판에서 사용할 수 없는 카테고리입니다."))
 
         // DB 데이터가 변경되지 않았는지 확인 (Safety Check)
-        Post post = postRepository.findById(targetId).get();
+        val post = postRepository.findById(targetId).orElse(null)
+            ?: throw EntityNotFoundException()
 
-        assertThat(post.getCategory().getId()).isNotEqualTo(invalidCategoryId);
+        AssertionsForClassTypes.assertThat(post.category.id).isNotEqualTo(invalidCategoryId)
     }
 
     @Test
     @DisplayName("글 수정 실패 - 작성자가 아닌 경우 (인가 실패)")
-    void t7_3() throws Exception {
+    fun t7_3() {
         // 로그인 (user1이 작성한 글을 user2로 로그인해서 수정 시도)
-        String user2AccessToken = jwtTokenProvider.createAccessToken("user2@test.com", "ROLE_USER");
-        Cookie user2Cookie = new Cookie("accessToken", user2AccessToken);
+        val user2AccessToken = jwtTokenProvider.createAccessToken("user2@test.com", "ROLE_USER")
+        val user2Cookie = Cookie("accessToken", user2AccessToken)
 
-        Long targetId = 1L; // 1번 게시글의 작성자는 user1
+        val targetId = 1L // 1번 게시글의 작성자는 user1
 
-        ResultActions resultActions = mvc
-                .perform(
-                        put("/posts/%d".formatted(targetId))
-                                .cookie(user2Cookie)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(
-                                        """
-                                        {
-                                            "title" : "수정 시도",
-                                            "content" : "내용 수정 시도",
-                                            "categoryId" : 1
-                                        }
-                                        """)
-                )
-                .andDo(print());
+        val resultActions = mvc
+            .perform(
+                put("/posts/$targetId")
+                    .cookie(user2Cookie)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                            "title": "수정 시도",
+                            "content": "내용 수정 시도",
+                            "categoryId": 1
+                        }
+                        """.trimIndent()
+                    )
+            )
+            .andDo(print())
 
         resultActions
-                .andExpect(status().isForbidden()) // 403 Forbidden 기대
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value("FORBIDDEN"))
-                .andExpect(jsonPath("$.message").value("작성자만 수정할 수 있습니다."));
-    }*/
-
+            .andExpect(status().isForbidden()) // 403 Forbidden 기대
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.code").value("FORBIDDEN"))
+            .andExpect(jsonPath("$.message").value("작성자만 수정할 수 있습니다."))
+    }
 
     @Test
     @DisplayName("게시글 상세 조회 - 성공")
@@ -428,58 +452,60 @@ class PostControllerTest {
             .andExpect(jsonPath("$.code").value("NOT_FOUND"))
     }
 
-
-    /*@Test
+    @Test
     @DisplayName("글 삭제 성공")
-    void t10_1() throws Exception {
+    fun t10_1() {
+        val post = postService.write("user1@test.com", "테스트 제목", "테스트 내용", 1L, 1L)
+        val targetId = post.id
 
-        Post post = postService.write("user1@test.com", "테스트 제목", "테스트 내용", 1L, 1L);
-        Long targetId = post.getId();
-
-        ResultActions resultActions = mvc
-                .perform(
-                        delete("/posts/%d".formatted(targetId))
-                                .cookie(user1Cookie))
-                .andDo(print());
+        val resultActions = mvc
+            .perform(
+                delete("/posts/$targetId") // 정적 임포트 및 접두사 제거 완료
+                    .cookie(user1Cookie)
+            )
+            .andDo(print())
 
         resultActions
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
 
-        Post deletedPost = postRepository.findById(targetId).get();
-        assertThat(deletedPost.isDeleted()).isTrue();
+        val deletedPost = postRepository.findById(targetId).orElse(null)
+            ?: throw EntityNotFoundException("대상 게시글 없음")
+        assertThat(deletedPost.deleted).isTrue()
     }
 
     @Test
     @DisplayName("글 삭제 실패 - 작성자가 아닌 경우")
-    void t10_2() throws Exception {
-
+    fun t10_2() {
         // author : user1
-        Post post = postService.write("user1@test.com", "테스트 제목", "테스트 내용", 1L, 1L);
-        Long targetId = post.getId();
+
+        val post = postService.write("user1@test.com", "테스트 제목", "테스트 내용", 1L, 1L)
+        val targetId = post.id
 
         // actor : user2
-        String user2AccessToken = jwtTokenProvider.createAccessToken("user2@test.com", "ROLE_USER");
-        Cookie user2Cookie = new Cookie("accessToken", user2AccessToken);
+        val user2AccessToken = jwtTokenProvider.createAccessToken("user2@test.com", "ROLE_USER")
+        val user2Cookie = Cookie("accessToken", user2AccessToken)
 
         // 다른 유저가 삭제 요청
-        ResultActions resultActions = mvc
-                .perform(
-                        delete("/posts/%d".formatted(targetId))
-                                .cookie(user2Cookie)) // 쿠키로 인증
-                .andDo(print());
+        val resultActions = mvc
+            .perform(
+                delete("/posts/$targetId") // 정적 임포트 및 접두사 제거 완료
+                    .cookie(user2Cookie)
+            )
+            .andDo(print())
 
         // 403 Forbidden 검증
         resultActions
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value("FORBIDDEN"))
-                .andExpect(jsonPath("$.message").value("작성자만 삭제할 수 있습니다."));
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.code").value("FORBIDDEN"))
+            .andExpect(jsonPath("$.message").value("작성자만 삭제할 수 있습니다."))
 
         // 삭제되지 않았는지 확인
-        Post notDeletedPost = postRepository.findById(targetId).get();
-        assertThat(notDeletedPost.isDeleted()).isFalse();
-    }*/
+        val notDeletedPost = postRepository.findById(targetId).orElse(null)
+            ?: throw EntityNotFoundException("대상 게시글 없음")
+        assertThat(notDeletedPost.deleted).isFalse()
+    }
 
     @Test
     @DisplayName("게시글 상세 조회 - 삭제된 게시글")
