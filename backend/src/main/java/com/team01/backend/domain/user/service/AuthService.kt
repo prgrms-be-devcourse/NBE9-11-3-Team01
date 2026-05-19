@@ -1,6 +1,5 @@
 package com.team01.backend.domain.user.service
 
-import com.team01.backend.domain.user.dto.*
 import com.team01.backend.domain.user.entity.Role
 import com.team01.backend.domain.user.entity.User
 import com.team01.backend.domain.user.repository.UserRepository

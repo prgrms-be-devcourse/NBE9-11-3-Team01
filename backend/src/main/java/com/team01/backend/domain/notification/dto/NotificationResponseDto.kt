@@ -13,7 +13,6 @@ data class NotificationResponseDto(
     val createdAt: LocalDateTime
 ) {
     companion object {
-        @JvmStatic
         fun from(notification: Notification): NotificationResponseDto =
             NotificationResponseDto(
                 id = notification.id,

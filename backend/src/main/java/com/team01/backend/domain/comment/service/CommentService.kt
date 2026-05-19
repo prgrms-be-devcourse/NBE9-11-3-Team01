@@ -54,7 +54,7 @@ class CommentService(
     /** 로그인 사용자 조회 — 로그인 검증은 Controller, 여기서는 DB 사용자 로딩만 */
     private fun findUser(email: String): User =
         userRepository.findByEmail(email)
-            .orElseThrow { EntityNotFoundException("유저를 찾을 수 없습니다.") }
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
 
     //-----------------------------------------------------------------------------------------------------------------
 
@@ -81,7 +81,7 @@ class CommentService(
             commentLikeRepository.findLikedCommentIdsByUserId(uid, allCommentIds).toHashSet()
         } ?: emptySet()
 
-        val repliesByParentId = allReplies.groupBy { it.parent!!.id }
+        val repliesByParentId = allReplies.groupBy { (it.parent ?: throw IllegalStateException("답글의 부모 댓글이 없습니다.")).id }
 
         return roots.map { root ->
             CommentReadResponseDto.of(

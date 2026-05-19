@@ -18,11 +18,9 @@ data class CommentDeleteResponseDto(
         val DELETED_CONTENT_PLACEHOLDER: String = "작성자에 의해 삭제된 댓글입니다."
 
         /** COMMENT-02 조회용 — 삭제된 엔티티는 원문 대신 플레이스홀더 */
-        @JvmStatic
         fun contentForRead(comment: Comment): String =
             if (comment.deleted) DELETED_CONTENT_PLACEHOLDER else comment.content
 
-        @JvmStatic
         fun of(commentId: Long): CommentDeleteResponseDto =
             CommentDeleteResponseDto(commentId, DELETED_CONTENT_PLACEHOLDER)
     }

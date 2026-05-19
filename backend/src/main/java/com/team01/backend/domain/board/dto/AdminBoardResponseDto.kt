@@ -23,7 +23,6 @@ data class AdminBoardResponseDto(
         board.deleted
     )
     companion object {
-        @JvmStatic
         fun from(board: Board): AdminBoardResponseDto =
             AdminBoardResponseDto(
                 id = board.id,

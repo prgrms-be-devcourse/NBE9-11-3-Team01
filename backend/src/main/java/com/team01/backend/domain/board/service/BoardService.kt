@@ -6,12 +6,10 @@ import com.team01.backend.domain.board.repository.BoardRepository
 import com.team01.backend.domain.post.repository.PostRepository
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
-import lombok.RequiredArgsConstructor
 import org.springframework.stereotype.Service
 
 
 @Service
-@RequiredArgsConstructor
 class BoardService(
     private val boardRepository: BoardRepository,
     private val postRepository: PostRepository

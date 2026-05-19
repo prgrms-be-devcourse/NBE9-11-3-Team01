@@ -13,6 +13,7 @@ import com.team01.backend.domain.post.service.PostService
 import com.team01.backend.domain.user.entity.User
 import com.team01.backend.domain.user.repository.UserRepository
 import com.team01.backend.domain.user.service.AuthService
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -93,8 +94,11 @@ class BaseInitData(
     fun setPost() {
         if (postRepository.count() > 0) return
 
-        val author1 = userRepository.findByEmail("user1@test.com").orElseThrow()
-        val author2 = userRepository.findByEmail("user2@test.com").orElseThrow()
+        val author1 = userRepository.findByEmail("user1@test.com")
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
+        val author2 = userRepository.findByEmail("user2@test.com")
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
+
 
         val board = boardRepository.findById(1L)
             .orElseThrow { RuntimeException("Board not found") }
@@ -203,8 +207,10 @@ class BaseInitData(
     fun setComment() {
         if (commentService.count() > 0) return
 
-        val author1 = userRepository.findByEmail("user1@test.com").orElseThrow()
-        val author2 = userRepository.findByEmail("user2@test.com").orElseThrow()
+        val author1 = userRepository.findByEmail("user1@test.com")
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
+        val author2 = userRepository.findByEmail("user2@test.com")
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
 
         commentService.writeInitComment(1L, author1, "첫 번째 댓글입니다", null)
         commentService.writeInitComment(1L, author2, "두 번째 댓글입니다", null)
@@ -248,7 +254,7 @@ class BaseInitData(
         for (i in 3L..32L) {
             val user = userRepository.findById(i).orElseThrow()
             postLikeRepository.save(PostLike(user, post2))
-            postRepository.increaseLikeCount(post2.id!!)
+            postRepository.increaseLikeCount(post2.id)
         }
 
         for (i in 3L..22L) {
