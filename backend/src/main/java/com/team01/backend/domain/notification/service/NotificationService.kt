@@ -72,7 +72,7 @@ class NotificationService( // 알림을 실제로 보내는 역할, 다시 볼 �
 
     @Transactional(readOnly = true)
     fun getAllNotification(email: String): List<NotificationResponseDto> {
-        val user = userRepository.findByEmail(email).getOrNull()
+        val user = userRepository.findByEmail(email)
             ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
 
         return notificationRepository.findByReceiverIdOrderByCreatedAtDesc(user.id)
@@ -81,7 +81,7 @@ class NotificationService( // 알림을 실제로 보내는 역할, 다시 볼 �
 
     @Transactional
     fun read(notificationId: Long, email: String): NotificationReadResponseDto {
-        val user = userRepository.findByEmail(email).getOrNull()
+        val user = userRepository.findByEmail(email)
             ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
 
         val notification = notificationRepository.findById(notificationId)

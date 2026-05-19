@@ -12,6 +12,7 @@ import com.team01.backend.domain.user.entity.Role
 import com.team01.backend.domain.user.entity.User
 import com.team01.backend.domain.user.repository.UserRepository
 import com.team01.backend.global.security.JwtTokenProvider
+import jakarta.persistence.EntityNotFoundException
 import jakarta.servlet.http.Cookie
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -58,7 +59,8 @@ class CommentControllerTest {
 
     @BeforeEach
     fun setUp() {
-        testUser = userRepository.findByEmail("user1@test.com").orElseThrow()
+        testUser = userRepository.findByEmail("user1@test.com")
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
         accessToken = jwtTokenProvider.createAccessToken(testUser.email, testUser.role.key)
         testPost = postRepository.findById(1L).orElseThrow()
         testPost2 = postRepository.findById(2L).orElseThrow()
