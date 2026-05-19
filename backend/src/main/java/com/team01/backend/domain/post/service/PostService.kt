@@ -143,9 +143,9 @@ class PostService(
             ?.let { if (it.isPresent) it.get() else null }
         val isOwner = currentUser != null && post.author.id == currentUser.id
         val liked = currentUser != null &&
-                postLikeRepository.findByUserIdAndPostId(
-                    currentUser.id ?: throw IllegalStateException("사용자 ID가 없습니다."),
-                    postId
+                postLikeRepository.findByPost_IdAndUser_Id(
+                    postId,
+                    currentUser.id ?: throw IllegalStateException("사용자 ID가 없습니다.")
                 ) != null
         val comments = commentService.getCommentsByPostId(postId, currentUser?.email)
 
