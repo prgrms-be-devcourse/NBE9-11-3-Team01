@@ -19,7 +19,6 @@ data class PostResponseDto(
     val modifiedAt: LocalDateTime,
 ) {
     companion object {
-        @JvmStatic
         fun of(post: Post): PostResponseDto = PostResponseDto(
             id = post.id ?: throw IllegalStateException("Post id is null"),
             title = post.title,
@@ -32,7 +31,6 @@ data class PostResponseDto(
             modifiedAt = post.modifiedAt ?: throw IllegalStateException("Post modifiedAt is null"),
         )
 
-        @JvmStatic
         fun from(post: Post): PostResponseDto = of(post)
     }
 }

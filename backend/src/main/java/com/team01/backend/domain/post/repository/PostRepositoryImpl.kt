@@ -1,19 +1,19 @@
-package com.team01.backend.domain.post.repository;
+package com.team01.backend.domain.post.repository
 
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.core.types.dsl.PathBuilder
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.team01.backend.domain.board.entity.Board;
+import com.querydsl.jpa.impl.JPAQueryFactory
+import com.team01.backend.domain.board.entity.Board
 import com.team01.backend.domain.category.entity.Category
-import com.team01.backend.domain.post.entity.Post;
+import com.team01.backend.domain.post.entity.Post
 import com.team01.backend.domain.user.entity.User
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
+import org.springframework.stereotype.Repository
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime
 import kotlin.jvm.java
 
 // PostRepositoryCustom 구현체 - QueryDSL로 동적 검색 쿼리 처리

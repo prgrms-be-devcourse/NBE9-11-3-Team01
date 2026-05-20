@@ -27,7 +27,7 @@ class MailService(private val mailSender: JavaMailSender) {
 
         val message = SimpleMailMessage().apply {
             setTo(email)
-            setSubject("[과제] 본인 인증 코드")
+            setSubject("본인 인증 코드")
             setText("인증 코드는 [$code] 입니다. 5분 내에 입력해 주세요.")
         }
         mailSender.send(message)

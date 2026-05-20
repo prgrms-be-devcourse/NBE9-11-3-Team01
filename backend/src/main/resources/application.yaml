@@ -7,6 +7,9 @@ spring:
   profiles:
     active: dev
 
+  datasource:
+    hikari:
+      maximum-pool-size: 20
 
   jpa:
     hibernate:
@@ -44,4 +47,16 @@ springdoc:
 # 4. 기타 설정 (spring 블록 밖)
 custom:
   cookie:
-    secure: ${COOKIE_SECURE:true} # 환경 변수가 없으면 기본값 true
+    secure: false # 환경 변수가 없으면 기본값 true
+
+logging:
+  level:
+    com.team01.backend.global.security: DEBUG
+
+server:
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 20
+    max-connections: 8192
+    accept-count: 100  # 스레드 풀 꽉 찼을 때 대기할 수 있는 큐 사이즈

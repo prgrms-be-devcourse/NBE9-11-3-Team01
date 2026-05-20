@@ -16,7 +16,6 @@ data class CommentResponseDto(
 ) {
     companion object {
         // 컨벤션: 정적 팩토리 메서드 of 사용
-        @JvmStatic
         fun of(comment: Comment): CommentResponseDto =
             CommentResponseDto(
                 id = comment.id,
@@ -27,7 +26,6 @@ data class CommentResponseDto(
                 modifiedAt = comment.modifiedAt,
             )
 
-        @JvmStatic
         fun from(comment: Comment): CommentResponseDto = of(comment)
     }
 }

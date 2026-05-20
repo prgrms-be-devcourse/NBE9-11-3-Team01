@@ -4,10 +4,8 @@ import com.team01.backend.global.entity.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
-import lombok.Getter
 
 @Entity
-@Getter
 @Table(name = "boards")
 class Board(name: String, description: String) : BaseEntity() {
     @field:Column(nullable = false, length = 50)

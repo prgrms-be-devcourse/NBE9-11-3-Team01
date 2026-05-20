@@ -43,7 +43,8 @@ class CommentServiceTest {
 
     @BeforeEach
     fun setUp() {
-        testUser = userRepository.findByEmail("user1@test.com").orElseThrow()
+        testUser = userRepository.findByEmail("user1@test.com")
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
         testPost = postRepository.findById(1L).orElseThrow()
     }
 

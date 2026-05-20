@@ -42,7 +42,6 @@ data class PostWriteResponse(
     )
 
     companion object {
-        @JvmStatic
         fun of(post: Post, postsCount: Long): PostWriteResponse = PostWriteResponse(post, postsCount)
     }
 }

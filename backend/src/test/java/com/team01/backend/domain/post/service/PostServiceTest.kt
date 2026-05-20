@@ -82,9 +82,9 @@ class PostServiceTest {
         val postLike = PostLike(author, post).apply { setBaseFields(id = 5000L) }
 
         whenever(postRepository.findWithDetailsById(1000L)).thenReturn(post)
-        whenever(userRepository.findByEmail("author@test.com")).thenReturn(Optional.of(author))
-        whenever(postLikeRepository.findByUserIdAndPostId(100L, 1000L)).thenReturn(postLike)
-        whenever(commentService.getCommentsByPostId(1000L, "author@test.com")).thenReturn(emptyList())
+        whenever(userRepository.findByEmail("author@test.com")).thenReturn(author)
+        whenever(postLikeRepository.findByPost_IdAndUser_Id(1000L, 100L)).thenReturn(postLike)
+        whenever(commentService.getCommentsByPostId(1000L, 100L)).thenReturn(emptyList())
 
         // when
         val result = postService.getPostById(1000L, "author@test.com")
@@ -100,8 +100,8 @@ class PostServiceTest {
         assertTrue(result.liked)
         assertTrue(result.comments.isEmpty())
         verify(postRepository).findWithDetailsById(1000L)
-        verify(postLikeRepository).findByUserIdAndPostId(100L, 1000L)
-        verify(commentService).getCommentsByPostId(1000L, "author@test.com")
+        verify(postLikeRepository).findByPost_IdAndUser_Id(1000L, 100L)
+        verify(commentService).getCommentsByPostId(1000L, 100L)
     }
 
     @Test
@@ -115,9 +115,9 @@ class PostServiceTest {
         val post = post(id = 1000L, author = author, board = board, category = category)
 
         whenever(postRepository.findWithDetailsById(1000L)).thenReturn(post)
-        whenever(userRepository.findByEmail("viewer@test.com")).thenReturn(Optional.of(viewer))
-        whenever(postLikeRepository.findByUserIdAndPostId(200L, 1000L)).thenReturn(null)
-        whenever(commentService.getCommentsByPostId(1000L, "viewer@test.com")).thenReturn(emptyList())
+        whenever(userRepository.findByEmail("viewer@test.com")).thenReturn(viewer)
+        whenever(postLikeRepository.findByPost_IdAndUser_Id(1000L, 200L)).thenReturn(null)
+        whenever(commentService.getCommentsByPostId(1000L, 200L)).thenReturn(emptyList())
 
         // when
         val result = postService.getPostById(1000L, "viewer@test.com")
@@ -125,7 +125,7 @@ class PostServiceTest {
         // then
         assertFalse(result.owner)
         assertFalse(result.liked)
-        verify(postLikeRepository).findByUserIdAndPostId(200L, 1000L)
+        verify(postLikeRepository).findByPost_IdAndUser_Id(1000L, 200L)
     }
 
     @Test
@@ -177,7 +177,7 @@ class PostServiceTest {
         val author = user(id = 100L, email = "author@test.com")
         val board = board(id = 1L)
         val category = category(id = 10L, boardId = 1L)
-        whenever(userRepository.findByEmail("author@test.com")).thenReturn(Optional.of(author))
+        whenever(userRepository.findByEmail("author@test.com")).thenReturn(author)
         whenever(boardRepository.findByIdAndDeletedFalse(1L)).thenReturn(board)
         whenever(categoryRepository.findById(10L)).thenReturn(Optional.of(category))
         whenever(categoryRepository.getReferenceById(10L)).thenReturn(category)
@@ -204,7 +204,7 @@ class PostServiceTest {
     @DisplayName("write - 사용자가 없으면 EntityNotFoundException")
     fun t7() {
         // given
-        whenever(userRepository.findByEmail("missing@test.com")).thenReturn(Optional.empty())
+        whenever(userRepository.findByEmail("missing@test.com")).thenReturn(null)
 
         // when & then
         assertThrows(EntityNotFoundException::class.java) {
@@ -218,7 +218,7 @@ class PostServiceTest {
     fun t8() {
         // given
         val author = user(id = 100L, email = "author@test.com")
-        whenever(userRepository.findByEmail("author@test.com")).thenReturn(Optional.of(author))
+        whenever(userRepository.findByEmail("author@test.com")).thenReturn(author)
         whenever(boardRepository.findByIdAndDeletedFalse(1L)).thenReturn(null)
 
         // when & then
@@ -235,7 +235,7 @@ class PostServiceTest {
         val author = user(id = 100L, email = "author@test.com")
         val board = board(id = 1L)
         val category = category(id = 10L, boardId = 2L)
-        whenever(userRepository.findByEmail("author@test.com")).thenReturn(Optional.of(author))
+        whenever(userRepository.findByEmail("author@test.com")).thenReturn(author)
         whenever(boardRepository.findByIdAndDeletedFalse(1L)).thenReturn(board)
         whenever(categoryRepository.findById(10L)).thenReturn(Optional.of(category))
 
@@ -257,7 +257,7 @@ class PostServiceTest {
         val newCategory = category(id = 11L, boardId = 1L, name = "변경")
         val post = post(id = 1000L, author = author, board = board, category = oldCategory)
         whenever(postRepository.findById(1000L)).thenReturn(Optional.of(post))
-        whenever(userRepository.findByEmail("author@test.com")).thenReturn(Optional.of(author))
+        whenever(userRepository.findByEmail("author@test.com")).thenReturn(author)
         whenever(categoryRepository.findById(11L)).thenReturn(Optional.of(newCategory))
 
         // when
@@ -289,7 +289,7 @@ class PostServiceTest {
         // given
         val post = post(id = 1000L)
         whenever(postRepository.findById(1000L)).thenReturn(Optional.of(post))
-        whenever(userRepository.findByEmail("missing@test.com")).thenReturn(Optional.empty())
+        whenever(userRepository.findByEmail("missing@test.com")).thenReturn(null)
 
         // when & then
         assertThrows(EntityNotFoundException::class.java) {
@@ -306,7 +306,7 @@ class PostServiceTest {
         val otherUser = user(id = 200L, email = "other@test.com")
         val post = post(id = 1000L, author = author)
         whenever(postRepository.findById(1000L)).thenReturn(Optional.of(post))
-        whenever(userRepository.findByEmail("other@test.com")).thenReturn(Optional.of(otherUser))
+        whenever(userRepository.findByEmail("other@test.com")).thenReturn(otherUser)
 
         // when & then
         assertThrows(AccessDeniedException::class.java) {
@@ -324,7 +324,7 @@ class PostServiceTest {
         val post = post(id = 1000L, author = author, board = board)
         val otherBoardCategory = category(id = 10L, boardId = 2L)
         whenever(postRepository.findById(1000L)).thenReturn(Optional.of(post))
-        whenever(userRepository.findByEmail("author@test.com")).thenReturn(Optional.of(author))
+        whenever(userRepository.findByEmail("author@test.com")).thenReturn(author)
         whenever(categoryRepository.findById(10L)).thenReturn(Optional.of(otherBoardCategory))
 
         // when & then
@@ -341,7 +341,7 @@ class PostServiceTest {
         val board = board(id = 1L)
         val post = post(id = 1000L, author = author, board = board)
         whenever(postRepository.findById(1000L)).thenReturn(Optional.of(post))
-        whenever(userRepository.findByEmail("author@test.com")).thenReturn(Optional.of(author))
+        whenever(userRepository.findByEmail("author@test.com")).thenReturn(author)
 
         // when
         postService.delete(1000L, "author@test.com")
@@ -371,7 +371,7 @@ class PostServiceTest {
         val author = user(id = 100L, email = "author@test.com")
         val post = post(id = 1000L, author = author).apply { delete() }
         whenever(postRepository.findById(1000L)).thenReturn(Optional.of(post))
-        whenever(userRepository.findByEmail("author@test.com")).thenReturn(Optional.of(author))
+        whenever(userRepository.findByEmail("author@test.com")).thenReturn(author)
 
         // when & then
         assertThrows(IllegalArgumentException::class.java) {
@@ -388,7 +388,7 @@ class PostServiceTest {
         val otherUser = user(id = 200L, email = "other@test.com")
         val post = post(id = 1000L, author = author)
         whenever(postRepository.findById(1000L)).thenReturn(Optional.of(post))
-        whenever(userRepository.findByEmail("other@test.com")).thenReturn(Optional.of(otherUser))
+        whenever(userRepository.findByEmail("other@test.com")).thenReturn(otherUser)
 
         // when & then
         assertThrows(AccessDeniedException::class.java) {
@@ -407,6 +407,7 @@ class PostServiceTest {
         val post = post(id = 1000L, board = board, category = category, title = "검색 제목")
         whenever(postRepository.searchByBoardId(eq(1L), eq("검색"), eq(10L), any<Pageable>(), eq("latest")))
             .thenReturn(PageImpl(listOf(post), PageRequest.of(0, 20), 1))
+        whenever(boardRepository.findByIdAndDeletedFalse(1L)).thenReturn(board)
 
         // when
         val result = postService.getPostsByBoardId(1L, 1, "검색", 10L, "latest")

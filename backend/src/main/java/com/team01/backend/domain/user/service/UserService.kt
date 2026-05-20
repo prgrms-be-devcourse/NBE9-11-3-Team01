@@ -22,8 +22,8 @@ class UserService(
     fun findIdByUsername(username: String): Long {
         val user = userRepository.findByEmail(username)
             ?: throw EntityNotFoundException("사용자를 찾을 수 없습니다: $username")
-        
-        return user.id ?: throw IllegalStateException("사용자 ID가 없습니다: $username")
+
+        return user.id
     }
 
     /**
