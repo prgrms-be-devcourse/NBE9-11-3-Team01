@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param
 interface PostLikeRepository : JpaRepository<PostLike, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT p FROM Post p WHERE p.id = :id")
+    @Query("SELECT p FROM Post p JOIN FETCH p.board WHERE p.id = :id")
     fun findPostByIdForUpdate(@Param("id") id: Long): Post?
 
     fun findByPost_IdAndUser_Id(postId: Long, userId: Long?): PostLike?

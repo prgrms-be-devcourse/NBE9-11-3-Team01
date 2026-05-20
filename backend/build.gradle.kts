@@ -6,7 +6,6 @@ plugins {
     kotlin("plugin.spring") version "2.2.21"
     kotlin("plugin.jpa") version "2.2.21"
     kotlin("kapt") version "2.2.21"
-    kotlin("plugin.lombok") version "2.2.21"
 }
 
 group = "com.team01"
@@ -66,13 +65,6 @@ dependencies {
 
     // 가상 메일 서버 (개발/테스트용)
     implementation("com.icegreen:greenmail:2.1.0")
-
-    // Lombok (Kotlin 전환 전까지 유지)
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-    testCompileOnly("org.projectlombok:lombok")
-    testAnnotationProcessor("org.projectlombok:lombok")
-    kapt("org.projectlombok:lombok") // 코틀린이 자바 롬복을 인식하게 만드는 설정
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")

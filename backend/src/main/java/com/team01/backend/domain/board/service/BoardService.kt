@@ -8,7 +8,6 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
-
 @Service
 class BoardService(
     private val boardRepository: BoardRepository,

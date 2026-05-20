@@ -24,12 +24,6 @@ spring:
         highlight_sql: true
         use_sql_comments: true
 
-
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-
   # 1. 설정 임포트 (외부 설정 파일 불러오기)
   config:
     import:
