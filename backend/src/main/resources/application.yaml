@@ -53,4 +53,4 @@ server:
       max: 200
       min-spare: 20
     max-connections: 8192
-    ccept-count: 100  # 스레드 풀 꽉 찼을 때 대기할 수 있는 큐 사이즈
+    accept-count: 100  # 스레드 풀 꽉 찼을 때 대기할 수 있는 큐 사이즈
