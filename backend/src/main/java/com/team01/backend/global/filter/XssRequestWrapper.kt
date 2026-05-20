@@ -1,4 +1,4 @@
-package com.team01.backend.global.filter;
+package com.team01.backend.global.filter
 
 import jakarta.servlet.ReadListener
 import jakarta.servlet.ServletInputStream

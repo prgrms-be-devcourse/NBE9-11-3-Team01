@@ -11,7 +11,6 @@ data class PostPageResponseDto(
         val hasNext: Boolean,
 ) {
     companion object {
-        @JvmStatic
         fun of(page: Page<PostResponseDto>): PostPageResponseDto = PostPageResponseDto(
                 posts = page.content,
                 currentPage = page.number + 1,
@@ -20,7 +19,6 @@ data class PostPageResponseDto(
                 hasNext = page.hasNext(),
                 )
 
-        @JvmStatic
         fun from(page: Page<PostResponseDto>): PostPageResponseDto = of(page)
     }
 }

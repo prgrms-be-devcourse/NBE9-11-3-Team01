@@ -40,7 +40,6 @@ data class PostModifyResponse(
     )
 
     companion object {
-        @JvmStatic
         fun of(post: Post): PostModifyResponse = PostModifyResponse(post)
     }
 }

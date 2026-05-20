@@ -26,9 +26,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 
-
-
-
 @Service
 @Transactional(readOnly = true)
 class PostService(
@@ -80,9 +77,7 @@ class PostService(
         categoryId: Long
     ): Post {
         val author = userRepository.findByEmail(email)
-            //TODO UserRepository.findByEmail optional 제거 되면 .orElseThrow 지우고, 아래 주석 코드로 변경
-            //?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
-            .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
+            ?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
 
         // 게시판, 카테고리 조회
         val board = boardRepository.findByIdAndDeletedFalse(boardId)
@@ -105,8 +100,7 @@ class PostService(
         val savedPost = postRepository.save(post)
 
         // 캐시 무효화 (board.id 검증 포함)
-        val targetBoardId = savedPost.board.id
-            ?: throw IllegalStateException("Board id is null")
+        val targetBoardId = post.board.id
         evictTop5Cache(targetBoardId)
 
         return savedPost
@@ -140,19 +134,16 @@ class PostService(
         validatePost(post)
 
         val currentUser = userRepository.findByEmail(email)
-            ?.let { if (it.isPresent) it.get() else null }
         val isOwner = currentUser != null && post.author.id == currentUser.id
         val liked = currentUser != null &&
                 postLikeRepository.findByPost_IdAndUser_Id(
                     postId,
-                    currentUser.id ?: throw IllegalStateException("사용자 ID가 없습니다.")
+                    currentUser.id
                 ) != null
-        val comments = commentService.getCommentsByPostId(postId, currentUser?.email)
+        val comments = commentService.getCommentsByPostId(postId, currentUser?.id)
 
         return PostDetailResponseDto.of(post, post.board, post.category, comments, isOwner, liked)
     }
-
-    fun findById(id: Long): Post? = postRepository.findByIdOrNull(id)
 
     @Transactional
     fun modify(
@@ -166,10 +157,8 @@ class PostService(
         val post = postRepository.findByIdOrNull(postId)
             ?: throw EntityNotFoundException("게시글을 찾을 수 없습니다.")
 
-        //TODO UserRepository.findByEmail optional 제거 되면 .orElseThrow 지우고, 아래 주석 코드로 변경
-        // val actor = userRepository.findByEmail(email) ?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
         val actor = userRepository.findByEmail(email)
-            .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
+            ?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
 
 
         // 작성자 권한 검증 (컨벤션 8번)
@@ -198,10 +187,8 @@ class PostService(
             ?: throw EntityNotFoundException("해당 게시물을 찾을 수 없습니다.")
 
         // 요청 유저(actor) 조회
-        //TODO UserRepository.findByEmail optional 제거 되면 .orElseThrow 지우고, 아래 주석 코드로 변경
-        // val actor = userRepository.findByEmail(email) ?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
         val actor = userRepository.findByEmail(email)
-            .orElseThrow { EntityNotFoundException("사용자를 찾을 수 없습니다.") }
+            ?: throw EntityNotFoundException("사용자를 찾을 수 없습니다.")
 
         // 삭제 여부 확인 (컨벤션 2번: isDeleted 대신 deleted 프로퍼티 사용)
         if (post.deleted) {
@@ -217,7 +204,6 @@ class PostService(
 
         // 캐시 무효화
         val targetBoardId = post.board.id
-            ?: throw IllegalStateException("Board id is null")
 
         evictTop5Cache(targetBoardId)
     }

@@ -15,7 +15,7 @@ import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 /**
- * [과제] Spring Security의 전반적인 보안 정책을 설정하는 클래스입니다.
+ * Spring Security의 전반적인 보안 정책을 설정하는 클래스입니다.
  * 기존 Java 코드를 기반으로 하이브리드 인증(세션+쿠키) 최적화를 반영했습니다.
  */
 @Configuration

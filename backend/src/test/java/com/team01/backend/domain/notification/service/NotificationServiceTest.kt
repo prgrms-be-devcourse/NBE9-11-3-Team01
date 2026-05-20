@@ -54,16 +54,16 @@ internal class NotificationServiceTest @Autowired constructor(
 
         val post = postService.write("user1@test.com", "title", "content aaaaaaaa", 1L, 2L) //user1
         val emitter = mock(SseEmitter::class.java)
-        given(emitterRepository.findByUserId(1L)).willReturn(listOf(emitter))
+        given(emitterRepository.findByUserId(2L)).willReturn(listOf(emitter))
 
         // When
         val comment = commentService.writeComment(post.id, CommentRequestDto("comment1", null), "commenter1@test.com")
 
         // Then
-        val notifications = notificationRepository.findByReceiverIdOrderByCreatedAtDesc(1L)
+        val notifications = notificationRepository.findByReceiverIdOrderByCreatedAtDesc(2L)
 
         Assertions.assertThat(notifications).hasSize(1)
-        Assertions.assertThat(notifications[0].receiverId).isEqualTo(1L)
+        Assertions.assertThat(notifications[0].receiverId).isEqualTo(2L)
     }
 
     @Test
@@ -88,16 +88,16 @@ internal class NotificationServiceTest @Autowired constructor(
     fun t3() {
         val post = postService.write("user1@test.com", "title", "content aaaaaaaa", 1L, 2L) //user1
         val emitter = mock(SseEmitter::class.java)
-        given(emitterRepository.findByUserId(2L)).willReturn(listOf(emitter))
+        given(emitterRepository.findByUserId(3L)).willReturn(listOf(emitter))
 
         // When
         val comment = commentService.writeComment(post.id, CommentRequestDto("comment1", null), "user2@test.com")
         val reply = commentService.writeComment(post.id, CommentRequestDto("comment1", comment.id), "user3@test.com")
 
         // Then
-        val notifications = notificationRepository.findByReceiverIdOrderByCreatedAtDesc(2L)
+        val notifications = notificationRepository.findByReceiverIdOrderByCreatedAtDesc(3L)
 
         Assertions.assertThat(notifications).hasSize(1)
-        Assertions.assertThat(notifications[0].senderId).isEqualTo(3L)
+        Assertions.assertThat(notifications[0].senderId).isEqualTo(4L)
     }
 }
