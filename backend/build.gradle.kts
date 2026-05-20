@@ -6,7 +6,6 @@ plugins {
     kotlin("plugin.spring") version "2.2.21"
     kotlin("plugin.jpa") version "2.2.21"
     kotlin("kapt") version "2.2.21"
-    kotlin("plugin.lombok") version "2.2.21"
 }
 
 group = "com.team01"
@@ -59,25 +58,23 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    // H2
-    runtimeOnly("com.h2database:h2")
+    // MySQL (운영)
+    runtimeOnly("com.mysql:mysql-connector-j")
+    // H2 (테스트 전용)
+    testRuntimeOnly("com.h2database:h2")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // 가상 메일 서버 (개발/테스트용)
     implementation("com.icegreen:greenmail:2.1.0")
-
-    // Lombok (Kotlin 전환 전까지 유지)
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-    testCompileOnly("org.projectlombok:lombok")
-    testAnnotationProcessor("org.projectlombok:lombok")
-    kapt("org.projectlombok:lombok") // 코틀린이 자바 롬복을 인식하게 만드는 설정
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")

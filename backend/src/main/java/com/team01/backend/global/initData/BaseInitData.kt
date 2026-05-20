@@ -9,8 +9,6 @@ import com.team01.backend.domain.post.entity.Post
 import com.team01.backend.domain.post.entity.PostLike
 import com.team01.backend.domain.post.repository.PostLikeRepository
 import com.team01.backend.domain.post.repository.PostRepository
-import com.team01.backend.domain.post.service.PostService
-import com.team01.backend.domain.user.entity.User
 import com.team01.backend.domain.user.repository.UserRepository
 import com.team01.backend.domain.user.service.AuthService
 import org.springframework.boot.ApplicationRunner
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional
 class BaseInitData(
     @Lazy private val self: BaseInitData,
     private val boardService: BoardService,
-    private val postService: PostService,
     private val commentService: CommentService,
     private val userRepository: UserRepository,
     private val postRepository: PostRepository,
@@ -248,7 +245,7 @@ class BaseInitData(
         for (i in 3L..32L) {
             val user = userRepository.findById(i).orElseThrow()
             postLikeRepository.save(PostLike(user, post2))
-            postRepository.increaseLikeCount(post2.id!!)
+            postRepository.increaseLikeCount(post2.id)
         }
 
         for (i in 3L..22L) {

@@ -81,7 +81,9 @@ class CommentService(
             commentLikeRepository.findLikedCommentIdsByUserId(uid, allCommentIds).toHashSet()
         } ?: emptySet()
 
-        val repliesByParentId = allReplies.groupBy { it.parent!!.id }
+        val repliesByParentId = allReplies.groupBy { reply ->
+            requireNotNull(reply.parent?.id) { "답글은 부모 댓글이 필요합니다" }
+        }
 
         return roots.map { root ->
             CommentReadResponseDto.of(
@@ -121,7 +123,9 @@ class CommentService(
 
         // 댓글 달림 이벤트 발행
         val maxLength = 10 // 알림에서 보여줄 내용 글자수 제한
-        val contentLimit = comment.content.let { if (it.length > maxLength) it.take(maxLength) + "..." else it }
+        val contentLimit = comment.content.let { content ->
+            if (content.length > maxLength) content.take(maxLength) + "..." else content
+        }
 
         if (post.author.id != user.id) { // 자기 글에 댓글 작성한 경우에는 발행하지 X
             eventPublisher.publishEvent(
