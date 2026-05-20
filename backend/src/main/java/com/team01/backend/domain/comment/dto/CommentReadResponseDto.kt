@@ -28,7 +28,6 @@ data class CommentReadResponseDto(
 ) {
     companion object {
         // COMMENT-02 댓글(답글) 조회 — 루트 + 답글 엔티티 목록 → 트리 DTO
-        @JvmStatic
         fun of(
             root: Comment,
             replyEntities: List<Comment>,
@@ -51,7 +50,6 @@ data class CommentReadResponseDto(
             )
         }
 
-        @JvmStatic
         fun from(
             root: Comment,
             replyEntities: List<Comment>,

@@ -9,18 +9,24 @@ import com.team01.backend.domain.post.entity.Post
 import com.team01.backend.domain.post.entity.PostLike
 import com.team01.backend.domain.post.repository.PostLikeRepository
 import com.team01.backend.domain.post.repository.PostRepository
+import com.team01.backend.domain.post.service.PostService
+import com.team01.backend.domain.user.entity.Role
+import com.team01.backend.domain.user.entity.User
 import com.team01.backend.domain.user.repository.UserRepository
 import com.team01.backend.domain.user.service.AuthService
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.annotation.Transactional
 
 @Configuration
 class BaseInitData(
     @Lazy private val self: BaseInitData,
     private val boardService: BoardService,
+    private val postService: PostService,
     private val commentService: CommentService,
     private val userRepository: UserRepository,
     private val postRepository: PostRepository,
@@ -29,6 +35,7 @@ class BaseInitData(
     private val categoryService: CategoryService,
     private val authService: AuthService,
     private val postLikeRepository: PostLikeRepository,
+    private val passwordEncoder: PasswordEncoder,
 ) {
 
     @Bean
@@ -44,6 +51,16 @@ class BaseInitData(
     @Transactional
     fun setMember() {
         if (userRepository.count() > 0) return
+
+        // admin 유저 직접 생성
+        userRepository.save(
+            User(
+                email = "admin@admin.com",
+                password = passwordEncoder.encode("password1234") ?: throw IllegalStateException("비밀번호 인코딩 실패"),
+                nickname = "관리자",
+                role = Role.ADMIN
+            )
+        )
 
         authService.signUp(
             email = "user1@test.com",
@@ -90,8 +107,11 @@ class BaseInitData(
     fun setPost() {
         if (postRepository.count() > 0) return
 
-        val author1 = userRepository.findByEmail("user1@test.com").orElseThrow()
-        val author2 = userRepository.findByEmail("user2@test.com").orElseThrow()
+        val author1 = userRepository.findByEmail("user1@test.com")
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
+        val author2 = userRepository.findByEmail("user2@test.com")
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
+
 
         val board = boardRepository.findById(1L)
             .orElseThrow { RuntimeException("Board not found") }
@@ -200,8 +220,10 @@ class BaseInitData(
     fun setComment() {
         if (commentService.count() > 0) return
 
-        val author1 = userRepository.findByEmail("user1@test.com").orElseThrow()
-        val author2 = userRepository.findByEmail("user2@test.com").orElseThrow()
+        val author1 = userRepository.findByEmail("user1@test.com")
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
+        val author2 = userRepository.findByEmail("user2@test.com")
+            ?: throw EntityNotFoundException("유저를 찾을 수 없습니다.")
 
         commentService.writeInitComment(1L, author1, "첫 번째 댓글입니다", null)
         commentService.writeInitComment(1L, author2, "두 번째 댓글입니다", null)

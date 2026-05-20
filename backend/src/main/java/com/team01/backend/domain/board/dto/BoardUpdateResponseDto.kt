@@ -21,7 +21,6 @@ data class BoardUpdateResponseDto(
         board.modifiedAt
     )
     companion object {
-        @JvmStatic
         fun from(board: Board): BoardUpdateResponseDto =
             BoardUpdateResponseDto(
                 id = board.id,

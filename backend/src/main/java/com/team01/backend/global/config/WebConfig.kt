@@ -1,8 +1,8 @@
-package com.team01.backend.global.config;
+package com.team01.backend.global.config
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.context.annotation.Configuration
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 /**
  * 정적 리소스 핸들러 설정 클래스

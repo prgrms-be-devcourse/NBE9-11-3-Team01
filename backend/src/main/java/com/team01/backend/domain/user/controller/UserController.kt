@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "사용자", description = "사용자 정보 관리 API")
 @RestController
 @RequestMapping("/users")
-@SecurityRequirement(name = "cookieAuth")
+@SecurityRequirement(name = "bearerAuth")
 class UserController(private val userService: UserService) {
 
     data class UserUpdateInfoRequest(

@@ -14,7 +14,6 @@ data class NotificationReadResponseDto(
     val modifiedAt: LocalDateTime
 ) {
     companion object {
-        @JvmStatic
         fun from(notification: Notification): NotificationReadResponseDto =
             NotificationReadResponseDto(
                 id = notification.id,

@@ -7,8 +7,6 @@ import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.stereotype.Component
 
-import java.io.IOException;
-
 // 모든 요청에 XssRequestWrapper 적용
 @Component
 class XssFilter : Filter {

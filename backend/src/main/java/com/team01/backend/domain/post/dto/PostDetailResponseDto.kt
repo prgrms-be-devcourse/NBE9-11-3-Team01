@@ -30,7 +30,6 @@ data class PostDetailResponseDto(
         val owner: Boolean,
 ) {
         companion object {
-                @JvmStatic
                 fun of(
                         post: Post,
                         board: Board,
@@ -56,7 +55,6 @@ data class PostDetailResponseDto(
                         owner = isOwner,
                 )
 
-                @JvmStatic
                 fun from(
                         post: Post,
                         board: Board,
