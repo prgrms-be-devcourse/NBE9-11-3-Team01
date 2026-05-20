@@ -85,8 +85,9 @@ function LoginForm() {
     if (!EMAIL_RE.test(resetEmail.trim())) return;
     setResetSendBusy(true);
     try {
-      await apiPostEmpty<unknown>(
-        `/auth/send-verification?email=${encodeURIComponent(resetEmail.trim())}`,
+      await apiPostJson<unknown, { email: string }>(
+        "/auth/email/send",
+        { email: resetEmail.trim() },
       );
     } catch (err) {
       setResetErr(

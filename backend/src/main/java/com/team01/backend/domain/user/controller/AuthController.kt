@@ -94,7 +94,7 @@ class AuthController(
     }
 
     @Operation(summary = "토큰 재발급", description = "만료된 액세스 토큰을 갱신합니다.")
-    @PostMapping("/reissue")
+    @PostMapping("/reissue", "/refresh")
     fun reissue(
         @CookieValue(name = "refreshToken", required = false) refreshToken: String?,
         response: HttpServletResponse
@@ -118,7 +118,10 @@ class AuthController(
     @Operation(summary = "비밀번호 재설정", description = "비밀번호를 잊어버린 경우 새로운 비밀번호로 설정합니다.")
     @PostMapping("/reset-password")
     fun resetPassword(@Valid @RequestBody request: PasswordResetRequest): ResponseEntity<ApiResponse<Void>> {
-        authService.resetPassword(request.email, request.newPassword) // [추가] 누락되었던 비밀번호 재설정 로직 연결
+        if (!mailService.verifyCode(request.email, request.verificationCode)) {
+            throw IllegalArgumentException("인증 코드가 일치하지 않습니다.")
+        }
+        authService.resetPassword(request.email, request.newPassword)
         return ResponseEntity.ok(ApiResponse.ofSuccessWithoutBody())
     }
 
