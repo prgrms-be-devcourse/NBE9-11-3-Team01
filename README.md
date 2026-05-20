@@ -49,7 +49,7 @@
 ![QueryDSL](https://img.shields.io/badge/QueryDSL-5.1.0-00599C)
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-Enabled-6DB33F?logo=springsecurity&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-0.11.5-000000?logo=jsonwebtokens&logoColor=white)
-![H2](https://img.shields.io/badge/H2-Database-09476B)
+![MySQL](https://img.shields.io/badge/mysql-4479A1.svg?logo=mysql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-Cache-DC382D?logo=redis&logoColor=white)
 
 ### Frontend
@@ -235,9 +235,45 @@ docker run -d --name redis -p 6379:6379 redis
 # 재시작
 docker start redis
 ```
+### ▶ application-secret.yml 설정
+resources 디렉토리에 `application-secret.yml` 파일을 생성한 뒤 아래 내용을 입력하세요.
 
-<br>
+```bash
+# Database
+SPRING_DATASOURCE_URL={mySQL DB경로}
+SPRING_DATASOURCE_USERNAME=root
+SPRING_DATASOURCE_PASSWORD={DB 비밀번호}
 
+# Redis
+SPRING_DATA_REDIS_HOST=localhost
+SPRING_DATA_REDIS_PORT=6379
+# SPRING_DATA_REDIS_PASSWORD={Redis 비밀번호}
+
+# GCP Cloud Storage
+SPRING_CLOUD_GCP_STORAGE_CREDENTIALS_LOCATION=classpath:gcp-service-account.json
+SPRING_CLOUD_GCP_STORAGE_BUCKET={버킷명}
+SPRING_CLOUD_GCP_STORAGE_PROJECT_ID={GCP 프로젝트 ID}
+
+# Mail
+SPRING_MAIL_HOST=127.0.0.1
+SPRING_MAIL_PORT=3025
+SPRING_MAIL_USERNAME={user}
+SPRING_MAIL_PASSWORD={password}
+SPRING_MAIL_PROTOCOL=smtp
+SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=false
+SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=false
+
+# JWT
+JWT_SECRET={특수문자 제외한 25자 이상 시크릿 키}
+JWT_ACCESS_EXPIRATION=900000
+JWT_REFRESH_EXPIRATION=604800000
+
+# Admin
+ADMIN_TOKEN={admin token}
+
+# Public API
+PUBLIC_API_SERVICE_KEY={공공 API 인증키}
+```
 ## 📌 프로젝트 한 줄 요약
 
 > **합격시그널은 취준생의 정보 공유와 소통을 빠르고 안전하게 지원하는, 인증·실시간 알림·캐싱 기반 커뮤니티 플랫폼입니다.**
