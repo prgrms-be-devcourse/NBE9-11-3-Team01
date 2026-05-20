@@ -3,7 +3,9 @@
 > **취업 준비생을 위한 커뮤니티 플랫폼**
 
 합격시그널은 취준생이 정보 공유, 질문/답변, 소통을 한 곳에서 할 수 있도록 만든 커뮤니티 서비스입니다.
-본 프로젝트는 6인 팀(백엔드 중심)으로 **2주간** 진행한 팀 프로젝트입니다.
+본 프로젝트는 6인 팀(백엔드 중심)으로 진행한 **3차 프로젝트** 결과물입니다.
+
+<img width="1600" height="960" alt="Image" src="https://github.com/user-attachments/assets/97767118-5681-4dda-833f-853266c4bb5b" />
 
 <br>
 
@@ -18,8 +20,9 @@
 6. [API 명세](#6-api-명세)
 7. [트러블슈팅](#7-트러블슈팅)
 8. [환경 변수 및 보안 설정](#8-환경-변수-및-보안-설정)
-9. [팀원 소개 및 역할](#9-팀원-소개-및-역할)
-910. [실행 방법](#-실행-방법)
+9. [부하 테스트](#9-부하-테스트)
+10. [팀원 소개 및 역할](#10-팀원-소개-및-역할)
+11. [실행 방법](#11-실행-방법)
 
 <br>
 
@@ -32,11 +35,13 @@
 | 프로젝트명 | 합격시그널 |
 | 프로젝트 유형 | 취업 준비생 커뮤니티 플랫폼 |
 | 팀 구성 | 6인 팀 프로젝트 (백엔드 중심) |
-| 개발 기간 | 2주 |
+| 개발 기간 | 1주 |
+| 개발 단계 | 3차 프로젝트 |
 
 **핵심 목표**
 - 게시판 중심 커뮤니티 기능 구현
 - JWT + HttpOnly Cookie 기반 인증/인가 강화
+- Java 기반 코드를 Kotlin 중심으로 마이그레이션하여 유지보수성 개선
 - Redis 캐싱 및 실시간 알림(SSE) 기반 사용자 경험 개선
 
 <br>
@@ -45,6 +50,7 @@
 
 ### Backend
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.5-6DB33F?logo=springboot&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.2.21-7F52FF?logo=kotlin&logoColor=white)
 ![Spring Data JPA](https://img.shields.io/badge/Spring%20Data%20JPA-Enabled-6DB33F?logo=spring&logoColor=white)
 ![QueryDSL](https://img.shields.io/badge/QueryDSL-5.1.0-00599C)
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-Enabled-6DB33F?logo=springsecurity&logoColor=white)
@@ -67,7 +73,9 @@
 
 ### 👥 사용자/인증
 - JWT + HttpOnly Cookie 기반 로그인/로그아웃/토큰 재발급
-- 이메일 인증 코드 기반 아이디 찾기 / 비밀번호 재설정
+- 회원가입 시 프로필 이미지 업로드 및 기본 이미지 제공
+- 이메일 인증 코드 기반 비밀번호 재설정
+- 마이페이지(닉네임/비밀번호/프로필 이미지 수정)
 - 회원 탈퇴 (소프트 삭제)
 
 ### 📝 커뮤니티
@@ -85,29 +93,25 @@
 
 ### 🛠️ 관리자
 - 게시판/카테고리 생성, 수정, 삭제
-- 회원 목록 조회
+- 회원 목록/권한 조회
+- 관리자 전용 페이지 접근 제어 (미들웨어 + JWT role 확인)
+
+### 🔄 3차 핵심 변경 (Java → Kotlin)
+- 백엔드 도메인/서비스/컨트롤러/리포지토리 레이어를 Kotlin(`.kt`)으로 통합
+- Kotlin + Spring/JPA 플러그인(`plugin.spring`, `plugin.jpa`, `kapt`) 적용
+- `jackson-module-kotlin` 적용으로 Kotlin 데이터 클래스 직렬화 안정화
 
 <br>
 
 ## 4. 시스템 아키텍처
 
 
-```Client (Browser)
-↓ HTTP
-Frontend (Next.js 16)
-↓ REST API + Cookie
-Backend (Spring Boot 4)
-├── H2 Database  (도메인 데이터)
-├── Redis        (인기글 캐시)
-└── Mail Server  (이메일 인증)
-↑ SSE
-Frontend (Next.js 16)
-```
+<img width="603" height="844" alt="Image" src="https://github.com/user-attachments/assets/8488a388-1eb4-4e63-8846-e7ea7fe35adb" />
 
 | 컴포넌트 | 역할 |
 |:---:|:---|
 | Spring Security Filter Chain | JWT 인증/인가, XSS 방지 필터 |
-| Controller / Service / Repository | 도메인 레이어 분리 |
+| Controller / Service / Repository (Kotlin) | 도메인 레이어 분리 및 마이그레이션 반영 |
 | Redis | 인기글 Top5 캐싱으로 DB 부하 감소 |
 | SSE | 실시간 알림 스트림 제공 |
 
@@ -153,6 +157,13 @@ Frontend (Next.js 16)
 - **해결**: Cache-Aside 패턴 + 게시글 작성/삭제/좋아요 변경 시 캐시 무효화(evict), TTL 설정으로 방어선 구축
 - **결과**: 데이터 정합성 확보 및 반복 조회 구간 DB 부하 감소
 
+### ④ 댓글 좋아요 동시성 정합성
+
+- **문제**: 동일 댓글에 대한 동시 좋아요/취소 요청에서 `likeCount` 불일치 가능성 발생
+- **원인**: 동시 트랜잭션이 같은 댓글을 갱신하며 경쟁 상태(race condition) 유발
+- **해결**: 댓글 행 단위 비관적 락 + 삭제 카운트 기반 멱등 처리로 이중 감소 방지
+- **결과**: 동시 요청 상황에서 좋아요 수 정합성 유지
+
 <br>
 
 ## 8. 환경 변수 및 보안 설정
@@ -166,11 +177,51 @@ Frontend (Next.js 16)
 |:---:|:---:|:---|
 | `.env` | `backend/` | JWT Secret Key, 메일 서버 계정 정보 |
 | `application-secret.yaml` | `backend/src/main/resources/` | JWT Secret Key 설정 |
-| `application-mail.yaml` | `backend/src/main/resources/` | 메일 서버 설정 (GreenMail 로컬 테스트용) |
 
 <br>
 
-## 9. 팀원 소개 및 역할
+## 9. 부하 테스트
+ 
+### 테스트 개요
+ 
+| 항목 | 내용 |
+|:---:|:---|
+| 도구 | Locust, Apache JMeter |
+| 테스트 데이터 | 게시글 10만 건, 유저 1만 명 |
+| 단계 | 100명 → 500명 → 1,000명 |
+| 목표 기준 | 평균 응답시간 1초 이내, 에러율 1% 미만 |
+ 
+### 시나리오
+ 
+| 시나리오 | 흐름 |
+|:---:|:---|
+| 비로그인 열람 | 게시판 목록 → 게시글 목록 |
+| 일반 열람 | 로그인 → 게시판 목록 → 게시글 목록 → 게시글 상세 |
+| 검색 | 로그인 → 게시글 검색 → 게시글 상세 |
+| 게시글 작성 | 로그인 → 게시글 작성 → 목록 재조회 |
+| 댓글 참여 | 로그인 → 게시글 상세 → 댓글 작성 → 좋아요 |
+| 인기글 조회 | 게시판 진입 → Top5 조회 |
+| 알림 수신 | 로그인 → SSE 연결 → 알림 수신 확인 |
+ 
+### 결과 요약
+ 
+| 시나리오 | 정상 (100명) 평균 | 목표 (500명) 평균 | 한계 (1,000명) 평균 | 목표 에러율 |
+|:---:|:---:|:---:|:---:|:---:|
+| 비로그인 열람 | 0ms | 0ms | 0ms | 0% |
+| 일반 열람 | 105ms | 483ms | 847ms | 0% |
+| 검색 | 215ms | 913ms | 1,605ms ⚠️ | 0% |
+| 게시글 작성 | 253ms | 2,866ms ⚠️ | 12,503ms ⚠️ | 0.05% |
+| 댓글 참여 | ~250ms | ~2,500ms ⚠️ | ~11,000ms ⚠️ | 0% |
+ 
+> **비로그인 열람**: Constant Timer 1초 적용으로 응답시간이 낮게 측정됨.  
+> **검색**: 1,000명 기준 평균 1,605ms로 목표 기준(1.5초) 초과. 검색 쿼리 최적화 개선 여지 있음.  
+> **게시글 작성**: 500명 이상부터 응답 지연 급증. Redis 미연결, 시드 데이터 소량으로 실제 운영 환경과 차이 있음.  
+> **댓글 참여**: 1,000명 구간에서 좋아요 API(`POST /posts/{id}/likes`) 500 에러 31건 발생. 비관적 락 한계 도달.
+ 
+
+<br>
+
+## 10. 팀원 소개 및 역할
 
 <table>
   <tr>
@@ -212,29 +263,8 @@ Frontend (Next.js 16)
 
 <br>
 
-## 10. 실행 방법
+## 11. 실행 방법
 
-### ▶ Backend
-```bash
-cd backend
-./gradlew bootRun
-```
-
-### ▶ Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### ▶ Redis (Docker)
-```bash
-# 최초 실행
-docker run -d --name redis -p 6379:6379 redis
-
-# 재시작
-docker start redis
-```
 ### ▶ application-secret.yml 설정
 resources 디렉토리에 `application-secret.yml` 파일을 생성한 뒤 아래 내용을 입력하세요.
 
@@ -264,7 +294,7 @@ SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=false
 SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=false
 
 # JWT
-JWT_SECRET={특수문자 제외한 32자 이상 시크릿 키}
+JWT_SECRET={특수문자 제외한 25자 이상 시크릿 키}
 JWT_ACCESS_EXPIRATION=900000
 JWT_REFRESH_EXPIRATION=604800000
 
@@ -274,6 +304,27 @@ ADMIN_TOKEN={admin token}
 # Public API
 PUBLIC_API_SERVICE_KEY={공공 API 인증키}
 ```
-## 📌 프로젝트 한 줄 요약
 
-> **합격시그널은 취준생의 정보 공유와 소통을 빠르고 안전하게 지원하는, 인증·실시간 알림·캐싱 기반 커뮤니티 플랫폼입니다.**
+### ▶ Backend
+```bash
+cd backend
+./gradlew bootRun
+```
+
+### ▶ Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### ▶ Redis (Docker)
+```bash
+# 최초 실행
+docker run -d --name redis -p 6379:6379 redis
+
+# 재시작
+docker start redis
+```
+
+<br>
