@@ -1,6 +1,7 @@
 package com.team01.backend.domain.notification.entity
 
 import com.team01.backend.global.entity.BaseEntity
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 
 @Entity
@@ -13,6 +14,7 @@ class Notification(receiverId: Long, senderId: Long, targetId: Long, content: St
         protected set
     var content:String = content
         protected set
+    @field:Column(name = "isRead")
     var alreadyRead: Boolean = false
         protected set
     fun read() {
