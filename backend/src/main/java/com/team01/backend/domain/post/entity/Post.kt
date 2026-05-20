@@ -5,7 +5,7 @@ import com.team01.backend.domain.category.entity.Category
 import com.team01.backend.domain.comment.entity.Comment
 import com.team01.backend.domain.user.entity.User
 import com.team01.backend.global.entity.BaseEntity
-import jakarta.persistence.*;
+import jakarta.persistence.*
 
 @Entity
 @Table(
