@@ -61,6 +61,7 @@ dependencies {
 
     // H2
     runtimeOnly("com.h2database:h2")
+    runtimeOnly("com.mysql:mysql-connector-j")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // 가상 메일 서버 (개발/테스트용)
